@@ -160,7 +160,16 @@ debug/
 # Keep essential files
 !README.md
 !.gitignore
-!.cursorrules
 !build-game.sh
 !run-tests.sh
 !update-planning-context.sh
+
+# Private workflow documents (keep efficient operation methods private)
+SWITCH_Claude_rules.md
+SWITCH_Cursor_rules.md
+SWITCH_development_structure.md
+SWITCH_project_setup.md
+.cursor/
+scripts/git-workflow.sh
+CONTRIBUTING.md
+docs/documentation/
