@@ -1,0 +1,38 @@
+{
+  "testSequences": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-01",
+    "sequences": {
+      "basic": {
+        "name": "Basic Sequence",
+        "description": "Simple sequence for testing",
+        "tiles": ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"]
+      },
+      "matchHeavy": {
+        "name": "Match Heavy Sequence",
+        "description": "Sequence with many matching opportunities",
+        "tiles": ["red", "red", "blue", "blue", "yellow", "yellow", "orange", "orange", "green", "green"]
+      },
+      "variety": {
+        "name": "Variety Sequence",
+        "description": "Sequence with good color variety",
+        "tiles": ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"]
+      },
+      "frustration": {
+        "name": "Frustration Sequence",
+        "description": "Sequence designed to test anti-frustration system",
+        "tiles": ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"]
+      },
+      "cascade": {
+        "name": "Cascade Sequence",
+        "description": "Sequence set up for cascade matches",
+        "tiles": ["red", "red", "blue", "blue", "yellow", "yellow", "orange", "orange", "green", "green"]
+      },
+      "edgePressure": {
+        "name": "Edge Pressure Sequence",
+        "description": "Sequence that creates edge pressure",
+        "tiles": ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"]
+      }
+    }
+  }
+}

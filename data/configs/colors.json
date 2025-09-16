@@ -1,0 +1,103 @@
+{
+  "colorPalette": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-01",
+    "colors": {
+      "red": {
+        "name": "Red",
+        "hex": "#FF0000",
+        "rgb": [255, 0, 0],
+        "shape": "square",
+        "shapeSymbol": "■",
+        "accessibility": {
+          "lightShade": "#FF6666",
+          "darkShade": "#CC0000",
+          "pattern": "solid"
+        }
+      },
+      "blue": {
+        "name": "Blue",
+        "hex": "#0000FF",
+        "rgb": [0, 0, 255],
+        "shape": "circle",
+        "shapeSymbol": "●",
+        "accessibility": {
+          "lightShade": "#6666FF",
+          "darkShade": "#0000CC",
+          "pattern": "solid"
+        }
+      },
+      "yellow": {
+        "name": "Yellow",
+        "hex": "#FFFF00",
+        "rgb": [255, 255, 0],
+        "shape": "triangle",
+        "shapeSymbol": "▲",
+        "accessibility": {
+          "lightShade": "#FFFF66",
+          "darkShade": "#CCCC00",
+          "pattern": "solid"
+        }
+      },
+      "orange": {
+        "name": "Orange",
+        "hex": "#FF8000",
+        "rgb": [255, 128, 0],
+        "shape": "diamond",
+        "shapeSymbol": "♦",
+        "accessibility": {
+          "lightShade": "#FFB366",
+          "darkShade": "#CC6600",
+          "pattern": "solid"
+        }
+      },
+      "green": {
+        "name": "Green",
+        "hex": "#00FF00",
+        "rgb": [0, 255, 0],
+        "shape": "star",
+        "shapeSymbol": "★",
+        "accessibility": {
+          "lightShade": "#66FF66",
+          "darkShade": "#00CC00",
+          "pattern": "solid"
+        }
+      },
+      "violet": {
+        "name": "Violet",
+        "hex": "#8000FF",
+        "rgb": [128, 0, 255],
+        "shape": "hexagon",
+        "shapeSymbol": "⬟",
+        "accessibility": {
+          "lightShade": "#B366FF",
+          "darkShade": "#6600CC",
+          "pattern": "solid"
+        }
+      }
+    },
+    "accessibility": {
+      "modes": {
+        "standard": {
+          "name": "Standard Mode",
+          "description": "Colors only (default)",
+          "useShapes": false,
+          "usePatterns": false
+        },
+        "accessible": {
+          "name": "Accessible Mode",
+          "description": "Colors + Shapes",
+          "useShapes": true,
+          "usePatterns": false
+        },
+        "shapeOnly": {
+          "name": "Shape-Only Mode",
+          "description": "Black & white with shapes only",
+          "useShapes": true,
+          "usePatterns": true,
+          "monochrome": true
+        }
+      }
+    }
+  }
+}

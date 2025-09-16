@@ -1,0 +1,160 @@
+# SWITCH Cursor Implementation Rules
+
+## Project Context
+- **Game**: SWITCH - Strategic endless match-3 puzzle
+- **Engine**: Unity 2022.3 LTS
+- **Language**: C#
+- **Target**: iOS/Android mobile (60 FPS)
+- **Architecture**: Event-driven, singleton GameManager
+
+## Before Starting Work
+1. Run `./update-planning-context.sh`
+2. Check SPRINT_STATUS.md for current task
+3. Review relevant UML diagrams
+4. Check DECISIONS.md for technical decisions
+
+## Implementation Standards
+
+### Code Structure
+```csharp
+// File header for every script
+/******************************************************************************
+ * SWITCH - [Component Name]
+ * Sprint: [X]
+ * Author: [Your Name]
+ * Date: [Creation Date]
+ * 
+ * Description: [Brief description]
+ * Dependencies: [List key dependencies]
+ *****************************************************************************/
+```
+
+### Unity-Specific Rules
+- Prefabs: Create prefab immediately after GameObject setup
+- Serialization: Use [SerializeField] for private fields needing Inspector access
+- Coroutines: Prefer async/await except for animation
+- Object Pooling: Always pool frequently created/destroyed objects
+- Mobile: Test on device every 3 features
+
+### Performance Requirements
+- Maintain 60 FPS at all times
+- Memory allocation <1KB per frame
+- Draw calls <100
+- Texture memory <100MB
+- Audio memory <20MB
+
+### C# Standards
+```csharp
+// Naming conventions
+public class GameManager     // PascalCase for classes
+private float moveSpeed;      // camelCase for fields
+public void CalculateScore()  // PascalCase for methods
+const int MAX_TILES = 64;     // UPPER_CASE for constants
+
+// Property pattern
+[SerializeField] private int score;
+public int Score => score;
+
+// Event pattern  
+public static event Action<int> OnScoreChanged;
+```
+
+### Testing Requirements
+- Write Play Mode test for gameplay features
+- Write Edit Mode test for algorithms
+- Test on minimum spec device daily
+- Profile performance after each feature
+
+### Implementation Order
+1. Core functionality (make it work)
+2. Error handling (make it safe)
+3. Optimization (make it fast)
+4. Polish (make it beautiful)
+
+### After Completing Task
+1. Run all tests
+2. Profile performance
+3. Update SPRINT_STATUS.md
+4. Run ./update-planning-context.sh
+5. Stage and commit changes with conventional format
+6. Push changes to remote repository
+
+### Forbidden Practices
+- No deep inheritance (max 2 levels)
+- No public fields (use properties)
+- No Find() methods in Update loops
+- No instantiate/destroy in gameplay (use pooling)
+- No synchronous resource loading
+- No hard-coded values (use ScriptableObjects)
+
+### Common Patterns
+```csharp
+// Singleton
+public class GameManager : MonoBehaviour
+{
+    private static GameManager instance;
+    public static GameManager Instance 
+    { 
+        get 
+        {
+            if (instance == null)
+                Debug.LogError("GameManager not initialized!");
+            return instance;
+        }
+    }
+    
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+}
+
+// Object Pool
+private Queue<GameObject> tilePool = new Queue<GameObject>();
+private void InitializePool(int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        GameObject tile = Instantiate(tilePrefab);
+        tile.SetActive(false);
+        tilePool.Enqueue(tile);
+    }
+}
+```
+
+### Git Workflow Requirements
+- Use conventional commit format: `[Sprint X] Type: Description`
+- Types: feat, fix, docs, style, refactor, test, perf, chore
+- Always stage and commit changes after completing tasks
+- Push changes to remote repository
+- Use feature branches for new development
+- Create pull requests for code review
+
+### Git Commands for Implementation
+```bash
+# Create feature branch
+./scripts/git-workflow.sh create-branch <sprint> <component>
+
+# Commit changes
+./scripts/git-workflow.sh commit <sprint> <type> <description>
+
+# Push and create PR
+./scripts/git-workflow.sh push
+
+# Run pre-commit checks
+./scripts/git-workflow.sh pre-commit
+```
+
+### Questions During Implementation
+If you encounter decisions not covered in DECISIONS.md:
+1. Check if it affects architecture (stop and ask Planning AI)
+2. Check if it affects performance (implement simplest solution)
+3. Check if it affects gameplay (refer to PRD)
+4. Document decision in SPRINT_STATUS.md notes
+5. Commit decision documentation

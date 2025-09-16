@@ -1,0 +1,92 @@
+{
+  "testBoards": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-01",
+    "boards": {
+      "empty": {
+        "name": "Empty Board",
+        "description": "All tiles cleared",
+        "grid": [
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null]
+        ]
+      },
+      "full": {
+        "name": "Full Board",
+        "description": "All tiles filled with random colors",
+        "grid": [
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"],
+          ["yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"],
+          ["orange", "green", "violet", "red", "blue", "yellow", "orange", "green"],
+          ["green", "violet", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["violet", "red", "blue", "yellow", "orange", "green", "violet", "red"],
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"]
+        ]
+      },
+      "match3": {
+        "name": "3-Match Board",
+        "description": "Board with 3-match available",
+        "grid": [
+          ["red", "red", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"],
+          ["yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"],
+          ["orange", "green", "violet", "red", "blue", "yellow", "orange", "green"],
+          ["green", "violet", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["violet", "red", "blue", "yellow", "orange", "green", "violet", "red"],
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"]
+        ]
+      },
+      "match4": {
+        "name": "4-Match Board",
+        "description": "Board with 4-match available",
+        "grid": [
+          ["red", "red", "red", "red", "blue", "yellow", "orange", "green"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"],
+          ["yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"],
+          ["orange", "green", "violet", "red", "blue", "yellow", "orange", "green"],
+          ["green", "violet", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["violet", "red", "blue", "yellow", "orange", "green", "violet", "red"],
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"]
+        ]
+      },
+      "cascade": {
+        "name": "Cascade Board",
+        "description": "Board set up for cascade matches",
+        "grid": [
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"],
+          ["yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"],
+          ["orange", "green", "violet", "red", "blue", "yellow", "orange", "green"],
+          ["green", "violet", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["violet", "red", "blue", "yellow", "orange", "green", "violet", "red"],
+          ["red", "red", "red", "orange", "green", "violet", "red", "blue"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"]
+        ]
+      },
+      "edgePressure": {
+        "name": "Edge Pressure Board",
+        "description": "Board with tiles building up on edges",
+        "grid": [
+          ["red", "red", "red", "red", "red", "red", "red", "red"],
+          ["blue", "yellow", "orange", "green", "violet", "red", "blue", "yellow"],
+          ["yellow", "orange", "green", "violet", "red", "blue", "yellow", "orange"],
+          ["orange", "green", "violet", "red", "blue", "yellow", "orange", "green"],
+          ["green", "violet", "red", "blue", "yellow", "orange", "green", "violet"],
+          ["violet", "red", "blue", "yellow", "orange", "green", "violet", "red"],
+          ["red", "blue", "yellow", "orange", "green", "violet", "red", "blue"],
+          ["blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue"]
+        ]
+      }
+    }
+  }
+}

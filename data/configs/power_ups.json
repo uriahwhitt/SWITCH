@@ -1,0 +1,149 @@
+{
+  "powerUps": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-01",
+    "categories": {
+      "queueManipulation": {
+        "queueShuffle": {
+          "name": "Queue Shuffle",
+          "description": "Randomize next 5 dots",
+          "cost": 1,
+          "effect": "shuffle",
+          "target": "queue",
+          "value": 5,
+          "cooldown": 0
+        },
+        "queueDelete": {
+          "name": "Queue Delete",
+          "description": "Remove 1 specific dot",
+          "cost": 1,
+          "effect": "delete",
+          "target": "queue",
+          "value": 1,
+          "cooldown": 0
+        },
+        "queueDelay": {
+          "name": "Queue Delay",
+          "description": "Push 1 dot to position 10",
+          "cost": 1,
+          "effect": "delay",
+          "target": "queue",
+          "value": 1,
+          "cooldown": 0
+        },
+        "queuePeek": {
+          "name": "Queue Peek",
+          "description": "Reveal 5 additional future dots",
+          "cost": 1,
+          "effect": "reveal",
+          "target": "queue",
+          "value": 5,
+          "cooldown": 0
+        },
+        "queueSwap": {
+          "name": "Queue Swap",
+          "description": "Exchange 2 dots positions",
+          "cost": 1,
+          "effect": "swap",
+          "target": "queue",
+          "value": 2,
+          "cooldown": 0
+        }
+      },
+      "boardPowers": {
+        "colorBomb": {
+          "name": "Color Bomb",
+          "description": "Clear all of one color",
+          "cost": 2,
+          "effect": "clearColor",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "rowClear": {
+          "name": "Row Clear",
+          "description": "Eliminate entire row",
+          "cost": 2,
+          "effect": "clearRow",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "columnClear": {
+          "name": "Column Clear",
+          "description": "Eliminate entire column",
+          "cost": 2,
+          "effect": "clearColumn",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "rainbowTile": {
+          "name": "Rainbow Tile",
+          "description": "Matches with any color",
+          "cost": 2,
+          "effect": "rainbow",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "gravityReverse": {
+          "name": "Gravity Reverse",
+          "description": "One-time opposite flow",
+          "cost": 3,
+          "effect": "reverseGravity",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        }
+      },
+      "emergencyPowers": {
+        "undoMove": {
+          "name": "Undo Move",
+          "description": "Revert last action",
+          "cost": 1,
+          "effect": "undo",
+          "target": "game",
+          "value": 1,
+          "cooldown": 0
+        },
+        "boardShuffle": {
+          "name": "Board Shuffle",
+          "description": "Randomize all tiles",
+          "cost": 2,
+          "effect": "shuffle",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "timeFreeze": {
+          "name": "Time Freeze",
+          "description": "Pause timer for 30 seconds",
+          "cost": 2,
+          "effect": "freezeTime",
+          "target": "game",
+          "value": 30,
+          "cooldown": 0
+        },
+        "matchHint": {
+          "name": "Match Hint",
+          "description": "Highlight best move",
+          "cost": 1,
+          "effect": "hint",
+          "target": "board",
+          "value": 1,
+          "cooldown": 0
+        },
+        "safetyNet": {
+          "name": "Safety Net",
+          "description": "Prevent next game over",
+          "cost": 3,
+          "effect": "safety",
+          "target": "game",
+          "value": 1,
+          "cooldown": 0
+        }
+      }
+    }
+  }
+}

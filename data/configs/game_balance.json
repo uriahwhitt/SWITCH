@@ -1,0 +1,43 @@
+{
+  "gameBalance": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-01",
+    "difficulty": {
+      "baseMatchScore": 100,
+      "cascadeMultiplier": 1.5,
+      "comboMultiplier": 2.0,
+      "timeBonusMultiplier": 1.2,
+      "speedIncreaseInterval": 60,
+      "speedIncreaseAmount": 0.1
+    },
+    "tileDistribution": {
+      "minMatchProbability": 0.3,
+      "maxMatchProbability": 0.8,
+      "colorVarietyWeight": 0.4,
+      "clusterQualityWeight": 0.3,
+      "edgePressureWeight": 0.3,
+      "antiFrustrationThreshold": 5,
+      "maxConsecutiveSameColor": 4
+    },
+    "powerUps": {
+      "earnRate": {
+        "scoreThresholds": [10000, 25000, 50000, 100000],
+        "basicPowerReward": 1,
+        "advancedPowerReward": 1,
+        "achievementReward": 1
+      },
+      "inventory": {
+        "maxCapacity": 20,
+        "stackLimit": 5,
+        "persistentBetweenRuns": true
+      }
+    },
+    "performance": {
+      "targetFPS": 60,
+      "minFPS": 30,
+      "memoryLimitMB": 200,
+      "allocationLimitKB": 1,
+      "drawCallLimit": 100
+    }
+  }
+}
