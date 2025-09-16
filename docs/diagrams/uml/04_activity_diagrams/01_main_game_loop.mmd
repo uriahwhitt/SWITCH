@@ -1,0 +1,130 @@
+flowchart TD
+    Start([Game Start]) --> Initialize[Initialize Game Systems]
+    Initialize --> LoadConfig[Load Game Configuration]
+    LoadConfig --> SetupUI[Setup User Interface]
+    SetupUI --> LoadPlayerData[Load Player Data]
+    LoadPlayerData --> ShowMenu[Show Main Menu]
+    
+    ShowMenu --> MenuChoice{Menu Selection}
+    MenuChoice -->|Play| StartGame[Start New Game]
+    MenuChoice -->|Continue| LoadGame[Load Saved Game]
+    MenuChoice -->|Settings| OpenSettings[Open Settings]
+    MenuChoice -->|Leaderboard| ShowLeaderboard[Show Leaderboard]
+    MenuChoice -->|Shop| OpenShop[Open Shop]
+    
+    OpenSettings --> ShowMenu
+    ShowLeaderboard --> ShowMenu
+    OpenShop --> ShowMenu
+    
+    StartGame --> InitializeBoard[Initialize Game Board]
+    LoadGame --> InitializeBoard
+    InitializeBoard --> SetupQueue[Setup Tile Queue]
+    SetupQueue --> StartTurn[Start First Turn]
+    
+    StartTurn --> WaitInput[Wait for Player Input]
+    WaitInput --> InputReceived{Input Received?}
+    InputReceived -->|No| CheckPause{Check for Pause}
+    CheckPause -->|Pause| PauseGame[Pause Game]
+    CheckPause -->|No| WaitInput
+    
+    PauseGame --> PauseMenu[Show Pause Menu]
+    PauseMenu --> PauseChoice{Pause Menu Choice}
+    PauseChoice -->|Resume| WaitInput
+    PauseChoice -->|Settings| OpenSettings
+    PauseChoice -->|Quit| ShowMenu
+    
+    InputReceived -->|Yes| CheckPowerUpAvailable{Power-Up Available?}
+    CheckPowerUpAvailable -->|Yes| PowerUpWindow[Show Power-Up Window]
+    CheckPowerUpAvailable -->|No| ProcessInput[Process Player Input]
+    
+    PowerUpWindow --> PowerUpChoice{Use Power-Up?}
+    PowerUpChoice -->|Yes| ProcessPowerUp[Process Power-Up Selection]
+    PowerUpChoice -->|No| ProcessInput
+    ProcessPowerUp --> ProcessInput
+    ProcessInput --> InputType{Input Type?}
+    
+    InputType -->|Swipe| ProcessSwipe[Process Swipe Direction]
+    InputType -->|Tap| ProcessTap[Process Tap Position]
+    InputType -->|Power-Up| ProcessPowerUp[Process Power-Up Selection]
+    
+    ProcessSwipe --> SetGravity[Set Gravity Direction]
+    ProcessTap --> InferGravity[Infer Gravity from Position]
+    SetGravity --> RequestTiles[Request Tiles from Queue]
+    InferGravity --> RequestTiles
+    
+    ProcessPowerUp --> PowerUpFlow[Execute Power-Up Flow]
+    PowerUpFlow --> RequestTiles
+    
+    RequestTiles --> CheckAntiFrustration{Apply Anti-Frustration?}
+    CheckAntiFrustration -->|Yes| ModifyTileDistribution[Modify Tile Distribution]
+    ModifyTileDistribution --> TilesAvailable{Tiles Available?}
+    CheckAntiFrustration -->|No| TilesAvailable
+    TilesAvailable -->|No| GameOver[Game Over - No Moves]
+    TilesAvailable -->|Yes| PlaceTiles[Place Tiles on Board]
+    
+    PlaceTiles --> ApplyGravity[Apply Gravity to Tiles]
+    ApplyGravity --> CheckMatches[Check for Matches]
+    
+    CheckMatches --> MatchesFound{Matches Found?}
+    MatchesFound -->|No| RefillQueue[Refill Queue]
+    MatchesFound -->|Yes| ClearMatches[Clear Matched Tiles]
+    
+    ClearMatches --> CalculateScore[Calculate Match Score]
+    CalculateScore --> UpdateScore[Update Total Score]
+    UpdateScore --> CheckCascades[Check for Cascades]
+    
+    CheckCascades --> CascadesFound{Cascades Found?}
+    CascadesFound -->|Yes| ProcessCascade[Process Cascade]
+    ProcessCascade --> ClearMatches
+    CascadesFound -->|No| RefillQueue
+    
+    RefillQueue --> UpdateUI[Update UI Elements]
+    UpdateUI --> CheckValidMoves[Check Valid Moves Available]
+    
+    CheckValidMoves --> ValidMovesAvailable{Valid Moves Available?}
+    ValidMovesAvailable -->|No| GameOver
+    ValidMovesAvailable -->|Yes| StartTurn
+    
+    GameOver --> ShowResults[Show Game Results]
+    ShowResults --> SaveScore[Save High Score]
+    SaveScore --> SubmitScore[Submit to Leaderboard]
+    SubmitScore --> GameOverMenu[Show Game Over Menu]
+    
+    GameOverMenu --> GameOverChoice{Game Over Choice}
+    GameOverChoice -->|Play Again| StartGame
+    GameOverChoice -->|Main Menu| ShowMenu
+    GameOverChoice -->|Leaderboard| ShowLeaderboard
+    GameOverChoice -->|Continue| ContinueOption{Watch Ad to Continue?}
+    
+    ContinueOption -->|Yes| WatchAd[Watch Advertisement]
+    WatchAd --> AdSuccess{Ad Watched Successfully?}
+    AdSuccess -->|Yes| RestoreGameState[Restore Previous State]
+    RestoreGameState --> StartTurn
+    AdSuccess -->|No| GameOverMenu
+    
+    ContinueOption -->|No| GameOverMenu
+    
+    %% Performance Monitoring Points
+    ProcessInput -.->|Monitor| PerfMonitor[Performance Monitor]
+    ApplyGravity -.->|Monitor| PerfMonitor
+    CheckMatches -.->|Monitor| PerfMonitor
+    ProcessCascade -.->|Monitor| PerfMonitor
+    
+    %% Error Handling
+    ProcessInput -.->|Error| ErrorHandler[Error Handler]
+    RequestTiles -.->|Error| ErrorHandler
+    PlaceTiles -.->|Error| ErrorHandler
+    CheckMatches -.->|Error| ErrorHandler
+    
+    %% Styling
+    classDef startEnd fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef monitor fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray: 5 5
+    classDef error fill:#ffebee,stroke:#d32f2f,stroke-width:1px,stroke-dasharray: 5 5
+    
+    class Start,GameOver startEnd
+    class Initialize,LoadConfig,SetupUI,LoadPlayerData,ShowMenu,StartGame,LoadGame,OpenSettings,ShowLeaderboard,OpenShop,InitializeBoard,SetupQueue,StartTurn,WaitInput,ProcessInput,ProcessSwipe,ProcessTap,ProcessPowerUp,SetGravity,InferGravity,PowerUpFlow,RequestTiles,PlaceTiles,ApplyGravity,CheckMatches,ClearMatches,CalculateScore,UpdateScore,CheckCascades,ProcessCascade,RefillQueue,UpdateUI,CheckGameOver,ShowResults,SaveScore,SubmitScore,GameOverMenu,PauseGame,PauseMenu process
+    class MenuChoice,InputReceived,CheckPause,PauseChoice,InputType,TilesAvailable,MatchesFound,CascadesFound,GameOverCondition,GameOverChoice decision
+    class PerfMonitor monitor
+    class ErrorHandler error

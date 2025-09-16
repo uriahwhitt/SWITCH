@@ -1,0 +1,167 @@
+classDiagram
+    %% Core Game Flow Classes
+    class GameManager {
+        -IGameState currentState
+        -IEventBus eventBus
+        -int currentScore
+        -float gameTime
+        +StartGame()
+        +HandleMatch(MatchData)
+        +HandlePowerUp(PowerUpType)
+        +UpdateScore(int)
+        -ChangeState(IGameState)
+    }
+
+    class BoardController {
+        -ITile[,] grid
+        -IObjectPool tilePool
+        -Vector2Int boardSize
+        +PlaceTile(ITile, Vector2Int)
+        +RemoveTile(Vector2Int)
+        +GetTile(Vector2Int)
+        +ApplyGravity(Direction)
+        +ClearMatches(MatchData[])
+    }
+
+    class MatchDetector {
+        -MatchPattern[] patterns
+        -CascadeResolver cascadeResolver
+        +DetectMatches(BoardState state)
+        +ValidateMatch(MatchData match)
+        +CalculateScore(MatchData match)
+        +FindCascadeMatches(BoardState state)
+    }
+
+    class QueueSystem {
+        -TileDistributor distributor
+        -QueueState currentState
+        +RequestTiles(int count)
+        +RefillFromDistributor()
+        +PopNext(int count)
+        +ShuffleQueue()
+    }
+
+    class TileDistributor {
+        -AntiFrustrationSystem antiFrustration
+        -StatisticalAnalyzer analyzer
+        +GenerateTiles(int count)
+        +GetOptimalTiles(BoardState state, int count)
+        +ApplyAntiFrustration(BoardState state)
+    }
+
+    class GravitySystem {
+        -Direction currentDirection
+        -GravityCalculator calculator
+        +SetGravityDirection(Direction direction)
+        +ApplyGravityToBoard(BoardState state)
+        +CalculateTileMovement(Vector2Int position)
+    }
+
+    class InputManager {
+        -SwipeDetector swipeDetector
+        -TapDetector tapDetector
+        -InputMode currentMode
+        +ProcessInput()
+        +HandleSwipe(SwipeData swipe)
+        +HandleTap(TapData tap)
+        +SwitchMode(InputMode mode)
+    }
+
+    class PowerUpExecutor {
+        -IPowerUp currentPowerUp
+        -PowerUpInventory inventory
+        +SelectPowerUp(PowerUpType type)
+        +ExecuteSelectedPowerUp()
+        +PreviewPowerUp(PowerUpType type)
+        +ValidatePowerUp(IPowerUp powerUp)
+    }
+
+    %% Data Classes
+    class BoardState {
+        +TileData[,] grid
+        +Vector2Int size
+        +int emptyCells
+        +GetTile(Vector2Int position)
+        +SetTile(Vector2Int position, TileData tile)
+        +IsValidPosition(Vector2Int position)
+    }
+
+    class MatchData {
+        +Vector2Int[] positions
+        +TileType tileType
+        +MatchType matchType
+        +int score
+        +bool isCascade
+        +int cascadeLevel
+        +CalculateScore()
+        +IsValid()
+    }
+
+    class TileData {
+        +TileType type
+        +Color color
+        +Vector2Int position
+        +int id
+        +bool isPowerUp
+        +PowerUpType powerType
+    }
+
+    class QueueState {
+        +TileData[] tiles
+        +int currentIndex
+        +int totalGenerated
+        +QueueStatistics statistics
+    }
+
+    %% Core Flow Relationships
+    GameManager -->|"1. Orchestrates"| BoardController
+    GameManager -->|"2. Manages"| QueueSystem
+    GameManager -->|"3. Processes"| MatchDetector
+    GameManager -->|"4. Controls"| PowerUpExecutor
+    GameManager -->|"5. Handles"| InputManager
+
+    %% Input to Board Flow
+    InputManager -->|"Swipe/Tap"| GravitySystem
+    GravitySystem -->|"Direction"| GameManager
+    GameManager -->|"Request Tiles"| QueueSystem
+
+    %% Queue to Board Flow
+    QueueSystem -->|"Provides Tiles"| BoardController
+    QueueSystem -->|"Uses"| TileDistributor
+    TileDistributor -->|"Generates"| QueueState
+
+    %% Board to Match Flow
+    BoardController -->|"Places Tiles"| BoardState
+    BoardController -->|"Triggers"| MatchDetector
+    MatchDetector -->|"Analyzes"| BoardState
+    MatchDetector -->|"Creates"| MatchData
+
+    %% Match to Score Flow
+    MatchDetector -->|"Reports Matches"| GameManager
+    GameManager -->|"Updates Score"| GameManager
+    MatchDetector -->|"Handles Cascades"| MatchDetector
+
+    %% Power-Up Integration
+    PowerUpExecutor -->|"Modifies"| BoardController
+    PowerUpExecutor -->|"Affects"| QueueSystem
+    PowerUpExecutor -->|"Uses"| GameManager
+
+    %% Data Relationships
+    BoardController -->|"Manages"| TileData
+    BoardController -->|"Creates"| BoardState
+    MatchDetector -->|"Creates"| MatchData
+    QueueSystem -->|"Manages"| QueueState
+    QueueSystem -->|"Contains"| TileData
+
+    %% Critical Flow Annotations
+    note for GameManager "Central orchestrator<br/>Manages all game systems<br/>Handles state transitions"
+    note for BoardController "Tile placement & management<br/>Gravity application<br/>Match triggering"
+    note for MatchDetector "Pattern recognition<br/>Score calculation<br/>Cascade detection"
+    note for QueueSystem "Tile supply chain<br/>Anti-frustration logic<br/>Distribution optimization"
+
+    %% Flow Direction Indicators
+    GameManager ..>|"1→2→3→4→5"| GameManager : "Core Game Loop"
+    InputManager ..>|"Input"| GravitySystem : "Player Action"
+    QueueSystem ..>|"Tiles"| BoardController : "Tile Supply"
+    BoardController ..>|"State"| MatchDetector : "Match Check"
+    MatchDetector ..>|"Results"| GameManager : "Score Update"

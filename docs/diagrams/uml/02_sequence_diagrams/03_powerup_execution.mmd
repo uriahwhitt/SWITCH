@@ -1,0 +1,143 @@
+sequenceDiagram
+    participant Player
+    participant UIManager
+    participant PowerUpBar
+    participant PowerUpExecutor
+    participant PowerUpInventory
+    participant PowerUpFactory
+    participant PowerUpBase
+    participant GameManager
+    participant BoardController
+    participant QueueSystem
+    participant MatchDetector
+    participant UIManager
+    participant AudioManager
+    participant ParticleSystem
+    participant PerformanceMonitor
+
+    Note over Player, PerformanceMonitor: Power-Up Execution Flow
+    Note over Player, PerformanceMonitor: Power-Ups can be used:<br/>- Before confirming a move<br/>- During turn planning<br/>- When no valid moves available
+
+    Player->>PowerUpBar: Select Power-Up Slot
+    PowerUpBar->>PowerUpInventory: Check Power-Up Availability
+    PowerUpInventory->>PowerUpInventory: Validate Power-Up Count
+    
+    alt Power-Up Available
+        PowerUpInventory->>PowerUpBar: Confirm Selection
+        PowerUpBar->>UIManager: Show Power-Up Preview
+        UIManager->>UIManager: Highlight Affected Area
+        
+        Player->>PowerUpBar: Confirm Power-Up Usage
+        PowerUpBar->>PowerUpExecutor: Execute Power-Up(PowerUpType)
+        PowerUpExecutor->>PerformanceMonitor: Start Power-Up Timer
+        
+        PowerUpExecutor->>PowerUpInventory: Validate Power-Up Usage
+        PowerUpInventory->>PowerUpInventory: Check Usage Requirements
+        
+        alt Power-Up Can Be Used
+            PowerUpExecutor->>PowerUpFactory: Create Power-Up Instance
+            PowerUpFactory->>PowerUpBase: Instantiate Power-Up
+            PowerUpBase->>PowerUpBase: Initialize Power-Up Data
+            
+            PowerUpExecutor->>PowerUpBase: GetPreview(GameContext)
+            PowerUpBase->>PowerUpBase: Calculate Preview Effects
+            PowerUpBase->>UIManager: Show Preview Animation
+            
+            PowerUpExecutor->>PowerUpBase: CanExecute(GameContext)
+            PowerUpBase->>PowerUpBase: Validate Execution Conditions
+            
+            alt Execution Valid
+                PowerUpExecutor->>PowerUpBase: Execute(GameContext)
+                PowerUpBase->>PowerUpBase: Log Power-Up Usage
+                PowerUpBase->>AudioManager: Play Activation Sound
+                PowerUpBase->>ParticleSystem: Trigger Activation Effect
+                
+                alt QueueShuffle Power-Up
+                    PowerUpBase->>QueueSystem: ShuffleQueue()
+                    QueueSystem->>QueueSystem: Randomize Tile Order
+                    QueueSystem->>UIManager: Animate Queue Shuffle
+                    
+                else QueueDelete Power-Up
+                    PowerUpBase->>QueueSystem: DeleteBottomTiles(count)
+                    QueueSystem->>QueueSystem: Remove Specified Tiles
+                    QueueSystem->>UIManager: Animate Tile Deletion
+                    
+                else QueuePeek Power-Up
+                    PowerUpBase->>QueueSystem: RevealFutureTiles(count)
+                    QueueSystem->>UIManager: Show Peek Preview
+                    UIManager->>UIManager: Display Additional Tiles
+                    
+                else ColorBomb Power-Up
+                    PowerUpBase->>BoardController: FindColoredTiles(TileType)
+                    BoardController->>BoardController: Identify Target Tiles
+                    PowerUpBase->>BoardController: TriggerExplosion(positions)
+                    BoardController->>ParticleSystem: Trigger Bomb Effect
+                    BoardController->>MatchDetector: Check for Matches
+                    
+                else RowClear Power-Up
+                    PowerUpBase->>BoardController: ClearRow(rowIndex)
+                    BoardController->>BoardController: Remove Row Tiles
+                    BoardController->>MatchDetector: Check for Matches
+                    
+                else ColumnClear Power-Up
+                    PowerUpBase->>BoardController: ClearColumn(columnIndex)
+                    BoardController->>BoardController: Remove Column Tiles
+                    BoardController->>MatchDetector: Check for Matches
+                    
+                else GravityReverse Power-Up
+                    PowerUpBase->>GameManager: ReverseGravityDirection()
+                    GameManager->>GameManager: Invert Current Direction
+                    GameManager->>UIManager: Show Direction Change
+                    
+                else UndoMove Power-Up
+                    PowerUpBase->>GameManager: RestoreGameState(previousState)
+                    GameManager->>GameManager: Revert to Previous State
+                    GameManager->>UIManager: Animate State Revert
+                    
+                else BoardShuffle Power-Up
+                    PowerUpBase->>BoardController: ShuffleBoard()
+                    BoardController->>BoardController: Randomize All Tiles
+                    BoardController->>UIManager: Animate Board Shuffle
+                    
+                else TimeFreeze Power-Up
+                    PowerUpBase->>GameManager: FreezeTime(duration)
+                    GameManager->>GameManager: Pause Timer
+                    GameManager->>UIManager: Show Time Freeze Effect
+                    
+                else SafetyNet Power-Up
+                    PowerUpBase->>GameManager: ActivateSafetyNet()
+                    GameManager->>GameManager: Prevent Game Over
+                    GameManager->>UIManager: Show Safety Net Effect
+                end
+                
+                PowerUpBase->>PowerUpExecutor: Return PowerUpResult
+                PowerUpExecutor->>PowerUpInventory: UsePowerUp(PowerUpType)
+                PowerUpInventory->>PowerUpInventory: Decrement Power-Up Count
+                PowerUpInventory->>PowerUpBar: Update Inventory Display
+                
+                PowerUpExecutor->>GameManager: NotifyPowerUpUsed(PowerUpType)
+                GameManager->>GameManager: Update Game State
+                GameManager->>UIManager: Update Game HUD
+                
+                PowerUpExecutor->>PerformanceMonitor: Log Power-Up Execution Time
+                PowerUpExecutor->>UIManager: Show Success Message
+                
+            else Execution Invalid
+                PowerUpBase->>PowerUpExecutor: Return Invalid Result
+                PowerUpExecutor->>UIManager: Show Error Message
+                PowerUpExecutor->>AudioManager: Play Error Sound
+            end
+            
+        else Power-Up Cannot Be Used
+            PowerUpInventory->>PowerUpExecutor: Return Usage Denied
+            PowerUpExecutor->>UIManager: Show Unavailable Message
+            PowerUpExecutor->>AudioManager: Play Denied Sound
+        end
+        
+    else Power-Up Not Available
+        PowerUpInventory->>PowerUpBar: Return Unavailable
+        PowerUpBar->>UIManager: Show Out of Stock Message
+        UIManager->>UIManager: Disable Power-Up Button
+    end
+    
+    Note over Player, PerformanceMonitor: Power-Up Execution Complete

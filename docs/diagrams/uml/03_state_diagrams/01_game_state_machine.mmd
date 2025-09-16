@@ -1,0 +1,219 @@
+stateDiagram-v2
+    [*] --> Initialization
+
+    Initialization --> MenuState : Game Start
+    Initialization --> LoadingState : Continue Game
+
+    LoadingState --> MenuState : Load Complete
+    LoadingState --> ErrorState : Load Failed
+
+    MenuState --> SettingsState : Settings Selected
+    MenuState --> LeaderboardState : Leaderboard Selected
+    MenuState --> ShopState : Shop Selected
+    MenuState --> TutorialState : First Time Player
+    MenuState --> PlayingState : Start Game
+
+    SettingsState --> MenuState : Back to Menu
+    LeaderboardState --> MenuState : Back to Menu
+    ShopState --> MenuState : Back to Menu
+
+    TutorialState --> PlayingState : Tutorial Complete
+    TutorialState --> MenuState : Skip Tutorial
+
+    PlayingState --> PausedState : Pause Input
+    PlayingState --> GameOverState : Game Over Condition
+    PlayingState --> PowerUpPlanningState : Power-Up Available (Pre-Move)
+    PlayingState --> PowerUpEmergencyState : Emergency Power-Up (No Moves)
+
+    PausedState --> PlayingState : Resume
+    PausedState --> MenuState : Quit to Menu
+
+    PowerUpPlanningState --> PlayingState : Power-Up Executed
+    PowerUpPlanningState --> PlayingState : Power-Up Cancelled
+
+    PowerUpEmergencyState --> PlayingState : Power-Up Executed
+    PowerUpEmergencyState --> GameOverState : Power-Up Cancelled
+
+    GameOverState --> MenuState : Return to Menu
+    GameOverState --> PlayingState : Play Again
+    GameOverState --> LeaderboardState : View Leaderboard
+    GameOverState --> ContinueState : Watch Ad to Continue
+    GameOverState --> ShareState : Share Score
+
+    ContinueState --> PlayingState : Ad Watched Successfully
+    ContinueState --> GameOverState : Ad Failed/Cancelled
+
+    ShareState --> GameOverState : Share Complete
+    ShareState --> GameOverState : Share Cancelled
+
+    ErrorState --> MenuState : Retry
+    ErrorState --> [*] : Exit Game
+
+    %% State Details
+    state MenuState {
+        [*] --> MainMenu
+        MainMenu --> Settings : Settings Button
+        MainMenu --> Leaderboard : Leaderboard Button
+        MainMenu --> Shop : Shop Button
+        MainMenu --> Play : Play Button
+        
+        Settings --> MainMenu : Back Button
+        Leaderboard --> MainMenu : Back Button
+        Shop --> MainMenu : Back Button
+        Play --> [*] : Transition to Playing
+    }
+
+    state PlayingState {
+        [*] --> WaitingForInput
+        WaitingForInput --> ProcessingInput : Input Received
+        ProcessingInput --> ApplyingGravity : Input Valid
+        ProcessingInput --> WaitingForInput : Input Invalid
+        
+        ApplyingGravity --> CheckingMatches : Gravity Applied
+        CheckingMatches --> ClearingMatches : Matches Found
+        CheckingMatches --> WaitingForInput : No Matches
+        
+        ClearingMatches --> ResolvingCascades : Matches Cleared
+        ResolvingCascades --> UpdatingScore : Cascades Complete
+        ResolvingCascades --> ResolvingCascades : More Cascades
+        
+        UpdatingScore --> RefillingQueue : Score Updated
+        RefillingQueue --> WaitingForInput : Queue Refilled
+    }
+
+    state PausedState {
+        [*] --> PauseMenu
+        PauseMenu --> Resume : Resume Button
+        PauseMenu --> Settings : Settings Button
+        PauseMenu --> Quit : Quit Button
+        
+        Resume --> [*] : Return to Playing
+        Settings --> PauseMenu : Back from Settings
+        Quit --> [*] : Return to Menu
+    }
+
+    state GameOverState {
+        [*] --> GameOverScreen
+        GameOverScreen --> ScoreDisplay : Score Calculation
+        ScoreDisplay --> ScoreSubmission : Submit Score
+        ScoreSubmission --> FinalResults : Score Submitted
+        FinalResults --> Menu : Menu Button
+        FinalResults --> PlayAgain : Play Again Button
+        FinalResults --> Leaderboard : Leaderboard Button
+        FinalResults --> Continue : Watch Ad Button
+        FinalResults --> Share : Share Button
+        
+        Menu --> [*] : Return to Menu
+        PlayAgain --> [*] : New Game
+        Leaderboard --> [*] : View Leaderboard
+        Continue --> [*] : Watch Ad
+        Share --> [*] : Share Score
+    }
+
+    state ContinueState {
+        [*] --> AdRequest
+        AdRequest --> AdLoading : Ad Available
+        AdRequest --> AdFailed : No Ad Available
+        AdLoading --> AdPlaying : Ad Loaded
+        AdLoading --> AdFailed : Load Failed
+        AdPlaying --> AdComplete : Ad Finished
+        AdPlaying --> AdSkipped : Ad Skipped
+        AdComplete --> [*] : Continue Game
+        AdSkipped --> [*] : Continue Game
+        AdFailed --> [*] : Return to Game Over
+    }
+
+    state PowerUpPlanningState {
+        [*] --> PowerUpSelection
+        PowerUpSelection --> PowerUpPreview : Power-Up Selected
+        PowerUpSelection --> [*] : Cancel Power-Up
+        PowerUpPreview --> PowerUpExecution : Confirm Power-Up
+        PowerUpPreview --> PowerUpSelection : Back to Selection
+        PowerUpExecution --> [*] : Power-Up Complete
+    }
+
+    state PowerUpEmergencyState {
+        [*] --> EmergencyPrompt
+        EmergencyPrompt --> PowerUpSelection : Use Power-Up
+        EmergencyPrompt --> [*] : Accept Game Over
+        PowerUpSelection --> PowerUpExecution : Power-Up Selected
+        PowerUpExecution --> [*] : Power-Up Complete
+    }
+
+    state ShareState {
+        [*] --> ShareOptions
+        ShareOptions --> TwitterShare : Twitter Selected
+        ShareOptions --> FacebookShare : Facebook Selected
+        ShareOptions --> InstagramShare : Instagram Selected
+        ShareOptions --> CopyLink : Copy Link Selected
+        ShareOptions --> [*] : Cancel Share
+        
+        TwitterShare --> [*] : Share Complete
+        FacebookShare --> [*] : Share Complete
+        InstagramShare --> [*] : Share Complete
+        CopyLink --> [*] : Link Copied
+    }
+
+    state TutorialState {
+        [*] --> TutorialStart
+        TutorialStart --> BasicControls : Start Tutorial
+        BasicControls --> QueueExplanation : Controls Learned
+        QueueExplanation --> MatchingTutorial : Queue Understood
+        MatchingTutorial --> GravityTutorial : Matching Learned
+        GravityTutorial --> PowerUpTutorial : Gravity Learned
+        PowerUpTutorial --> AdvancedTutorial : Power-Ups Learned
+        AdvancedTutorial --> TutorialComplete : All Lessons Complete
+        
+        TutorialComplete --> [*] : Ready to Play
+    }
+
+    %% Transition Conditions
+    note right of PlayingState
+        Game Over Conditions:
+        - No valid moves available
+        - Time limit reached
+        - Player quits
+    end note
+
+    note right of PowerUpSelectionState
+        Power-Up States:
+        - Selection active
+        - Preview showing
+        - Execution pending
+    end note
+
+    note right of TutorialState
+        Tutorial Phases:
+        - Progressive learning
+        - Contextual hints
+        - Skill validation
+    end note
+
+    note right of ContinueState
+        Monetization Feature:
+        - Watch ad to continue game
+        - Core revenue stream
+        - Fallback to game over if ad fails
+    end note
+
+    note right of PowerUpPlanningState
+        Pre-Move Power-Ups:
+        - Used before confirming direction
+        - Strategic planning phase
+        - Can be cancelled
+    end note
+
+    note right of PowerUpEmergencyState
+        Emergency Power-Ups:
+        - Used when no valid moves
+        - Last chance to save game
+        - Game over if cancelled
+    end note
+
+    note right of ShareState
+        Social Media Sharing:
+        - Share score screenshot
+        - Pre-formatted messages
+        - Viral growth potential
+        - External sharing only
+    end note

@@ -1,0 +1,735 @@
+classDiagram
+    %% Core Game Management
+    class GameManager {
+        -IGameState currentState
+        -IEventBus eventBus
+        -ISaveManager saveManager
+        -INetworkManager networkManager
+        -int currentScore
+        -float gameTime
+        -GameConfig config
+        +Initialize()
+        +StartGame()
+        +PauseGame()
+        +EndGame()
+        +HandleMatch(MatchData)
+        +HandlePowerUp(PowerUpType)
+        +UpdateScore(int)
+        -ChangeState(IGameState)
+        -CheckGameOver()
+        -SaveGameState()
+    }
+
+    class IGameState {
+        <<interface>>
+        +Enter()
+        +Execute()
+        +Exit()
+        +CanTransitionTo(IGameState)
+    }
+
+    class MenuState {
+        -UIManager uiManager
+        +Enter()
+        +Execute()
+        +Exit()
+        +HandleMenuInput()
+    }
+
+    class PlayingState {
+        -BoardController boardController
+        -InputManager inputManager
+        +Enter()
+        +Execute()
+        +Exit()
+        +ProcessPlayerInput()
+    }
+
+    class PausedState {
+        -float pauseTime
+        +Enter()
+        +Execute()
+        +Exit()
+        +ResumeGame()
+    }
+
+    class GameOverState {
+        -GameOverData gameOverData
+        +Enter()
+        +Execute()
+        +Exit()
+        +ShowResults()
+        +ShareToSocial()
+        +SubmitScore()
+    }
+
+    class ShareState {
+        -int score
+        -string screenshotPath
+        +Enter()
+        +Execute()
+        +Exit()
+        +ShareToTwitter()
+        +ShareToFacebook()
+        +ShareToInstagram()
+        +CopyLink()
+    }
+
+    %% Board and Tile System
+    class BoardController {
+        -ITile[,] grid
+        -IObjectPool tilePool
+        -Vector2Int boardSize
+        -IGravitySystem gravitySystem
+        -IMatchDetector matchDetector
+        +Initialize(int width, int height)
+        +PlaceTile(ITile, Vector2Int)
+        +RemoveTile(Vector2Int)
+        +GetTile(Vector2Int)
+        +ApplyGravity(Direction)
+        +GetBoardState()
+        +IsValidPosition(Vector2Int)
+        +ClearMatches(MatchData[])
+        +AnimateTileMovement()
+    }
+
+    class ITile {
+        <<interface>>
+        +TileType Type
+        +Color Color
+        +Vector2Int Position
+        +GameObject Visual
+        +bool IsMatched
+        +Initialize(TileData)
+        +AnimateToPosition(Vector3)
+        +Destroy()
+        +SetMatched(bool)
+    }
+
+    class BasicTile {
+        -TileData data
+        -Animator animator
+        -SpriteRenderer spriteRenderer
+        +Initialize(TileData)
+        +AnimateToPosition(Vector3)
+        +Destroy()
+        +SetMatched(bool)
+        +PlayMatchAnimation()
+    }
+
+    class PowerTile {
+        -PowerUpType powerType
+        -float effectRadius
+        -bool isActivated
+        +Initialize(TileData)
+        +ActivatePower()
+        +GetAffectedTiles()
+        +SetMatched(bool)
+        +PlayActivationEffect()
+    }
+
+    class TileFactory {
+        -IObjectPool tilePool
+        -TileConfig config
+        -Dictionary~TileType, GameObject~ prefabs
+        +CreateTile(TileType)
+        +ReturnTile(ITile)
+        +PrewarmPool(int count)
+        +GetTilePrefab(TileType)
+    }
+
+    %% Input System
+    class InputManager {
+        -IInputManager inputSystem
+        -SwipeDetector swipeDetector
+        -TapDetector tapDetector
+        -InputBuffer inputBuffer
+        -InputMode currentMode
+        -InputConfig config
+        +Initialize(InputConfig config)
+        +ProcessInput()
+        +HandleSwipe(SwipeData swipe)
+        +HandleTap(TapData tap)
+        +SwitchMode(InputMode mode)
+        +EnableInput()
+        +DisableInput()
+    }
+
+    class SwipeDetector {
+        -float minSwipeDistance
+        -float maxSwipeTime
+        -Vector2 startPosition
+        -float startTime
+        +DetectSwipe(Vector2 position, float time)
+        +CalculateDirection(Vector2 start, Vector2 end)
+        +ValidateSwipe(SwipeData swipe)
+        +GetSwipeMagnitude()
+    }
+
+    class TapDetector {
+        -float maxTapTime
+        -float maxTapDistance
+        -Vector2 tapPosition
+        +DetectTap(Vector2 position, float time)
+        +ValidateTap(TapData tap)
+        +GetTapPosition(Vector2 screenPos)
+        +IsDoubleTap()
+    }
+
+    %% Queue System
+    class QueueManager {
+        -IQueueSystem queueSystem
+        -TileDistributor distributor
+        -QueueDisplay display
+        -QueueState currentState
+        -QueueConfig config
+        +Initialize(QueueConfig config)
+        +ProcessQueue()
+        +RequestTiles(int count)
+        +RefillFromDistributor()
+        +UpdateDisplay()
+        +GetQueueStatistics()
+        +ShuffleQueue()
+        +PeekNextTiles(int count)
+    }
+
+    class TileDistributor {
+        -TileConfig tileConfig
+        -AntiFrustrationSystem antiFrustration
+        -StatisticalAnalyzer analyzer
+        -Queue~TileData~ tileQueue
+        +GenerateTiles(int count)
+        +AnalyzeBoardState(BoardState state)
+        +AdjustDistribution(BoardAnalysis analysis)
+        +GetOptimalTiles(BoardState state, int count)
+        +ValidateDistribution(TileData[] tiles)
+        +ApplyAntiFrustration(BoardState state)
+    }
+
+    %% Match Detection
+    class MatchDetector {
+        -IMatchDetector detector
+        -MatchPattern[] patterns
+        -MatchConfig config
+        -CascadeResolver cascadeResolver
+        +Initialize(MatchConfig config)
+        +DetectMatches(BoardState state)
+        +ValidateMatch(MatchData match)
+        +CalculateScore(MatchData match)
+        +FindCascadeMatches(BoardState state)
+        +GetMatchPatterns()
+        +CheckForSpecialMatches()
+    }
+
+    class CascadeResolver {
+        -MatchDetector detector
+        -CascadeConfig config
+        -int currentCascadeLevel
+        +ResolveCascades(BoardState state)
+        +CalculateCascadeScore(MatchData[] matches)
+        +AnimateCascade(MatchData[] matches)
+        +CheckForMoreCascades(BoardState state)
+        +GetCascadeChain(MatchData initialMatch)
+        +IncrementCascadeLevel()
+    }
+
+    %% Gravity System
+    class DirectionalGravity {
+        -IGravitySystem gravitySystem
+        -GravityCalculator calculator
+        -TileMovement movement
+        -Direction currentDirection
+        -GravityConfig config
+        +Initialize(GravityConfig config)
+        +SetGravityDirection(Direction direction)
+        +ApplyGravityToBoard(BoardState state)
+        +CalculateTileMovement(Vector2Int position)
+        +AnimateGravityMovement(TileMovement[] movements)
+        +ValidateGravityResult(GravityResult result)
+        +GetCurrentDirection()
+    }
+
+    class GravityCalculator {
+        -Direction direction
+        -Vector2Int boardSize
+        -float gravitySpeed
+        +CalculateMovement(Vector2Int position, Direction dir)
+        +GetGravityVector(Direction direction)
+        +FindLandingPosition(Vector2Int start, BoardState state)
+        +CalculateFallDistance(Vector2Int start, Vector2Int end)
+        +ValidateMovement(MovementData movement)
+        +GetOptimalPath(Vector2Int start, Vector2Int end)
+    }
+
+    %% Power-Up System
+    class PowerUpExecutor {
+        -IPowerUp currentPowerUp
+        -PowerUpInventory inventory
+        -GameContext gameContext
+        -PowerUpEffects effects
+        -PowerUpFactory factory
+        +SelectPowerUp(PowerUpType type)
+        +ExecuteSelectedPowerUp()
+        +CancelPowerUp()
+        +PreviewPowerUp(PowerUpType type)
+        +ValidatePowerUp(IPowerUp powerUp)
+        -ApplyPowerUpEffects(PowerUpResult result)
+        -UpdateInventory()
+        -NotifyPowerUpUsed(PowerUpType type)
+    }
+
+    class PowerUpInventory {
+        -Dictionary~PowerUpType, int~ inventory
+        -int maxCapacity
+        -PowerUpConfig config
+        -SaveManager saveManager
+        +AddPowerUp(PowerUpType type, int count)
+        +UsePowerUp(PowerUpType type)
+        +GetCount(PowerUpType type)
+        +GetAvailablePowerUps()
+        +IsInventoryFull()
+        +SaveInventory()
+        +LoadInventory()
+        +CanUsePowerUp(PowerUpType type)
+    }
+
+    class IPowerUp {
+        <<interface>>
+        +PowerUpType Type
+        +string Name
+        +int UsesRemaining
+        +bool IsAvailable()
+        +void Execute(GameContext context)
+        +bool CanExecute(GameContext context)
+        +PowerUpResult GetPreview(GameContext context)
+    }
+
+    class PowerUpBase {
+        <<abstract>>
+        #PowerUpType type
+        #string name
+        #string description
+        #Sprite icon
+        #int maxUses
+        #int currentUses
+        #AudioClip activationSound
+        +Initialize(PowerUpData data)
+        +Execute(GameContext context)*
+        +CanExecute(GameContext context)*
+        +GetPreview(GameContext context)*
+        #LogUsage()
+        #PlayActivationEffect()
+    }
+
+    class QueueShuffle {
+        -int shufflePositions
+        +Execute(GameContext context)
+        +CanExecute(GameContext context)
+        +GetPreview(GameContext context)
+        -ShuffleQueue(QueueState queue)
+    }
+
+    class ColorBomb {
+        -TileType targetColor
+        -int blastRadius
+        +Execute(GameContext context)
+        +CanExecute(GameContext context)
+        +GetPreview(GameContext context)
+        -FindColoredTiles(BoardState board, TileType color)
+        -TriggerExplosion(Vector2Int[] positions)
+    }
+
+    class QueuePeek {
+        -int peekDistance
+        +Execute(GameContext context)
+        +CanExecute(GameContext context)
+        +GetPreview(GameContext context)
+        -RevealFutureTiles(int count)
+    }
+
+    class GravityReverse {
+        -float duration
+        +Execute(GameContext context)
+        +CanExecute(GameContext context)
+        +GetPreview(GameContext context)
+        -ReverseGravityDirection(Direction current)
+    }
+
+    class UndoMove {
+        -GameStateData previousState
+        +Execute(GameContext context)
+        +CanExecute(GameContext context)
+        +GetPreview(GameContext context)
+        -RestoreGameState(GameStateData state)
+    }
+
+    class PowerUpFactory {
+        -Dictionary~PowerUpType, PowerUpData~ powerUpData
+        -IObjectPool powerUpPool
+        +CreatePowerUp(PowerUpType type)
+        +RegisterPowerUp(PowerUpType type, PowerUpData data)
+        +GetPowerUpData(PowerUpType type)
+        +PreloadPowerUps()
+    }
+
+    %% UI System
+    class UIManager {
+        -IUIManager uiSystem
+        -Dictionary~UIScreen, UIPanel~ screens
+        -HUDController hudController
+        -MenuSystem menuSystem
+        -PopupManager popupManager
+        -UIAnimator animator
+        -UIConfig config
+        +Initialize(UIConfig config)
+        +TransitionToScreen(UIScreen screen)
+        +UpdateGameHUD(GameStateData state)
+        +ShowGameOverScreen(GameOverData data)
+        +HandleBackButton()
+        +SetUIScale(float scale)
+        +ShowNotification(string message)
+    }
+
+    class HUDController {
+        -ScoreDisplay scoreDisplay
+        -TimerDisplay timerDisplay
+        -PowerUpBar powerUpBar
+        -QueueVisualizer queueVisualizer
+        -ComboIndicator comboIndicator
+        -DirectionIndicator directionIndicator
+        +UpdateScore(int score, bool animate)
+        +UpdateTimer(float time)
+        +UpdatePowerUps(PowerUpInventory inventory)
+        +UpdateQueue(QueueState queue)
+        +ShowCombo(int comboLevel)
+        +ShowDirectionFeedback(Direction direction)
+        +PulseElement(HUDElement element)
+    }
+
+    %% Tutorial System
+    class TutorialManager {
+        -ITutorialManager tutorialSystem
+        -TutorialSequencer sequencer
+        -HintSystem hintSystem
+        -TutorialState currentState
+        -TutorialConfig config
+        +Initialize(TutorialConfig config)
+        +StartProgressiveTutorial()
+        +TriggerContextualHint(GameContext context)
+        +RecordPlayerProgress(PlayerAction action)
+        +DisableTutorial()
+        +GetTutorialProgress()
+        -CheckTriggerConditions()
+        -SaveTutorialState()
+    }
+
+    class HintSystem {
+        -Dictionary~HintType, HintData~ hints
+        -HintPriorityQueue activeHints
+        -float hintCooldown
+        -HintConfig config
+        +QueueHint(HintType type, int priority)
+        +ShowNextHint()
+        +DismissCurrentHint()
+        +IsHintAvailable(HintType type)
+        +GetHintHistory()
+        -EvaluateHintConditions(GameContext context)
+        -RecordHintShown(HintType type)
+    }
+
+    class TutorialSequencer {
+        -Queue~TutorialStep~ steps
+        -TutorialStep currentStep
+        -int stepIndex
+        +LoadSequence(TutorialSequence sequence)
+        +NextStep()
+        +PreviousStep()
+        +JumpToStep(int index)
+        +IsSequenceComplete()
+        +GetCurrentStepInfo()
+        -ValidateStepCompletion()
+    }
+
+    %% Service Layer
+    class SaveManager {
+        -ISaveManager saveSystem
+        -SQLiteDatabase database
+        -PlayerPrefs backup
+        -SaveConfig config
+        +SaveGameState(GameStateData state)
+        +LoadGameState()
+        +SavePlayerProfile(PlayerProfile profile)
+        +LoadPlayerProfile()
+        +SaveSettings(SettingsData settings)
+        +LoadSettings()
+        +BackupToCloud()
+        +RestoreFromCloud()
+    }
+
+    class AudioManager {
+        -AudioPool primaryPool
+        -AudioPool secondaryPool
+        -AudioSource musicSource
+        -AudioSource notificationSource
+        -AudioMixer masterMixer
+        -AudioConfig config
+        +PlaySound(AudioClip, Priority)
+        +PlayMusic(AudioClip)
+        +StopSound(int id)
+        +SetVolume(float)
+        +DuckAudio(float duration)
+        +PlayMatchSound(MatchType type)
+        +PlayPowerUpSound(PowerUpType type)
+    }
+
+    class NetworkManager {
+        -SimpleLeaderboardService leaderboardService
+        -FriendCodeSystem friendSystem
+        -bool isOnline
+        -NetworkConfig config
+        +SubmitScore(int score)
+        +GetLeaderboard() LeaderboardEntry[]
+        +GetFriendsLeaderboard() LeaderboardEntry[]
+        +ShareToSocial(int score)
+        +CheckConnection() bool
+        +GenerateFriendCode() string
+        +AddFriend(string friendCode) bool
+    }
+
+    class SimpleLeaderboardService {
+        -FirebaseDatabase database
+        -string playerId
+        -string friendCode
+        +GetTop100() LeaderboardEntry[]
+        +SubmitScore(int score) bool
+        +GetFriendsScores() LeaderboardEntry[]
+        +GenerateFriendCode() string
+        +AddFriend(string friendCode) bool
+        +RemoveFriend(string friendCode) bool
+        +GetPlayerRank(int score) int
+    }
+
+    class FriendCodeSystem {
+        -string playerId
+        -string friendCode
+        -string[] friends
+        +GenerateCode() string
+        +ValidateCode(string code) bool
+        +AddFriend(string code) bool
+        +GetFriends() string[]
+        +IsFriend(string playerId) bool
+    }
+
+    class LeaderboardEntry {
+        +string playerId
+        +string displayName
+        +int score
+        +long timestamp
+        +string friendCode
+        +LeaderboardEntry(string id, string name, int score)
+        +bool IsValid()
+        +string ToString()
+    }
+
+    class PerformanceMonitor {
+        -FPSCounter fpsCounter
+        -MemoryTracker memoryTracker
+        -DrawCallCounter drawCallCounter
+        -BatteryMonitor batteryMonitor
+        -PerformanceConfig config
+        +Initialize(PerformanceConfig config)
+        +StartMonitoring()
+        +StopMonitoring()
+        +GetPerformanceReport()
+        +LogPerformanceMetrics()
+        +CheckPerformanceThresholds()
+        +TriggerPerformanceWarning()
+        +AdaptQualityLevel()
+    }
+
+    %% Data Structures
+    class TileData {
+        <<struct>>
+        +TileType type
+        +Color color
+        +Vector2Int position
+        +int id
+        +bool isPowerUp
+        +PowerUpType powerType
+        +TileData(TileType type, Color color)
+        +bool Equals(TileData other)
+        +string ToString()
+        +TileData Clone()
+    }
+
+    class MatchData {
+        +Vector2Int[] positions
+        +TileType tileType
+        +MatchType matchType
+        +int score
+        +float timestamp
+        +bool isCascade
+        +int cascadeLevel
+        +MatchData(Vector2Int[] positions, TileType type)
+        +int CalculateScore()
+        +bool IsValid()
+        +MatchData Clone()
+    }
+
+    class GameStateData {
+        +BoardState boardState
+        +QueueState queueState
+        +PlayerStats playerStats
+        +GameSettings settings
+        +float gameTime
+        +int currentScore
+        +GameStateData()
+        +void SaveToFile(string path)
+        +void LoadFromFile(string path)
+        +bool IsValid()
+        +GameStateData Clone()
+    }
+
+    %% Enums
+    class TileType {
+        <<enumeration>>
+        Red
+        Blue
+        Green
+        Yellow
+        Purple
+        Orange
+        Special
+        PowerUp
+    }
+
+    class Direction {
+        <<enumeration>>
+        Up
+        Down
+        Left
+        Right
+        None
+    }
+
+    class PowerUpType {
+        <<enumeration>>
+        QueueShuffle
+        QueueDelete
+        QueuePeek
+        ColorBomb
+        RowClear
+        ColumnClear
+        GravityReverse
+        UndoMove
+        BoardShuffle
+        TimeFreeze
+        SafetyNet
+    }
+
+    class MatchType {
+        <<enumeration>>
+        Horizontal
+        Vertical
+        LShape
+        TShape
+        Cross
+        FiveInRow
+        Special
+    }
+
+    class HintType {
+        <<enumeration>>
+        FirstSwipe
+        QueueExplanation
+        MatchMaking
+        PowerUpUsage
+        GravityChange
+        CascadeOpportunity
+        CenterPressure
+        NoMovesWarning
+        PowerUpAvailable
+        HighScoreClose
+    }
+
+    class TutorialPhase {
+        <<enumeration>>
+        NotStarted
+        BasicControls
+        QueueSystem
+        Matching
+        Gravity
+        PowerUps
+        Advanced
+        Completed
+    }
+
+    %% Relationships
+    GameManager --> IGameState
+    IGameState <|.. MenuState
+    IGameState <|.. PlayingState
+    IGameState <|.. PausedState
+    IGameState <|.. GameOverState
+    IGameState <|.. ShareState
+
+    GameManager --> BoardController
+    GameManager --> InputManager
+    GameManager --> QueueManager
+    GameManager --> MatchDetector
+    GameManager --> PowerUpExecutor
+    GameManager --> UIManager
+    GameManager --> TutorialManager
+    GameManager --> SaveManager
+    GameManager --> AudioManager
+    GameManager --> NetworkManager
+    GameManager --> PerformanceMonitor
+
+    BoardController --> ITile
+    ITile <|.. BasicTile
+    ITile <|.. PowerTile
+    BoardController --> TileFactory
+    BoardController --> DirectionalGravity
+    BoardController --> MatchDetector
+
+    InputManager --> SwipeDetector
+    InputManager --> TapDetector
+
+    QueueManager --> TileDistributor
+    QueueManager --> TileData
+
+    MatchDetector --> CascadeResolver
+    MatchDetector --> MatchData
+
+    DirectionalGravity --> GravityCalculator
+
+    PowerUpExecutor --> PowerUpInventory
+    PowerUpExecutor --> PowerUpFactory
+    PowerUpFactory --> IPowerUp
+    IPowerUp <|.. PowerUpBase
+    PowerUpBase <|-- QueueShuffle
+    PowerUpBase <|-- ColorBomb
+    PowerUpBase <|-- QueuePeek
+    PowerUpBase <|-- GravityReverse
+    PowerUpBase <|-- UndoMove
+
+    TutorialManager --> HintSystem
+    TutorialManager --> TutorialSequencer
+
+    UIManager --> HUDController
+
+    TileData --> TileType
+    MatchData --> MatchType
+    DirectionalGravity --> Direction
+    PowerUpExecutor --> PowerUpType
+    HintSystem --> HintType
+    TutorialManager --> TutorialPhase
+
+    GameManager --> GameStateData
+    SaveManager --> GameStateData
+    PerformanceMonitor --> GameManager
+
+    NetworkManager --> SimpleLeaderboardService
+    NetworkManager --> FriendCodeSystem
+    SimpleLeaderboardService --> FriendCodeSystem
+    SimpleLeaderboardService --> LeaderboardEntry
+    GameOverState --> ShareState

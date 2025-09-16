@@ -1,0 +1,118 @@
+graph TB
+    subgraph "SWITCH Game System"
+        SWITCH[SWITCH Mobile Game]
+        
+        subgraph "Core Game Systems"
+            GM[GameManager]
+            BC[BoardController]
+            QS[QueueSystem]
+            MD[MatchDetector]
+            GS[GravitySystem]
+            PU[PowerUpSystem]
+        end
+        
+        subgraph "UI & Presentation"
+            UI[UIManager]
+            HUD[HUDController]
+            TUT[TutorialSystem]
+            ANIM[AnimationSystem]
+        end
+        
+        subgraph "Services"
+            AUDIO[AudioManager]
+            SAVE[SaveManager]
+            NET[NetworkManager]
+            PERF[PerformanceMonitor]
+        end
+        
+        SWITCH --> GM
+        GM --> BC
+        GM --> QS
+        GM --> MD
+        GM --> GS
+        GM --> PU
+        GM --> UI
+        GM --> AUDIO
+        GM --> SAVE
+        GM --> NET
+        GM --> PERF
+        
+        UI --> HUD
+        UI --> TUT
+        UI --> ANIM
+    end
+    
+    subgraph "External Systems"
+        PLAYER[Player]
+        LEADERBOARD[P2P Leaderboard Network]
+        ANALYTICS[Analytics Service]
+        ADS[Ad Service]
+        CLOUD[Cloud Storage]
+        SOCIAL[Social Platform]
+        STORE[App Store]
+    end
+    
+    subgraph "Mobile Platform"
+        DEVICE[Mobile Device]
+        OS[Operating System]
+        STORAGE[Local Storage]
+        NETWORK[Network Connection]
+        BATTERY[Battery System]
+        SENSORS[Touch Sensors]
+    end
+    
+    %% Player Interactions
+    PLAYER -->|"Touch Input<br/>Swipe/Tap"| SWITCH
+    SWITCH -->|"Visual Feedback<br/>Audio Feedback<br/>Haptic Feedback"| PLAYER
+    
+    %% Network Interactions
+    SWITCH -->|"Score Submission<br/>Validation Requests"| LEADERBOARD
+    LEADERBOARD -->|"Score Validation<br/>Leaderboard Updates"| SWITCH
+    
+    %% Analytics
+    SWITCH -->|"Game Events<br/>Performance Metrics<br/>User Behavior"| ANALYTICS
+    ANALYTICS -->|"Insights<br/>Recommendations"| SWITCH
+    
+    %% Advertising
+    SWITCH -->|"Ad Requests<br/>User Data"| ADS
+    ADS -->|"Ad Content<br/>Revenue Data"| SWITCH
+    
+    %% Cloud Storage
+    SWITCH -->|"Save Data<br/>Settings<br/>Progress"| CLOUD
+    CLOUD -->|"Data Sync<br/>Backup Restore"| SWITCH
+    
+    %% Social Features
+    SWITCH -->|"Share Scores<br/>Social Login"| SOCIAL
+    SOCIAL -->|"Social Data<br/>Friends List"| SWITCH
+    
+    %% App Store
+    SWITCH -->|"Update Requests<br/>Purchase Data"| STORE
+    STORE -->|"App Updates<br/>Purchase Validation"| SWITCH
+    
+    %% Platform Interactions
+    DEVICE -->|"Hardware Access<br/>System Resources"| SWITCH
+    SWITCH -->|"Resource Usage<br/>System Calls"| DEVICE
+    
+    OS -->|"System Services<br/>API Access"| SWITCH
+    SWITCH -->|"System Requests<br/>Permissions"| OS
+    
+    STORAGE -->|"Data Persistence<br/>File Access"| SWITCH
+    SWITCH -->|"Save Operations<br/>Data Storage"| STORAGE
+    
+    NETWORK -->|"Internet Access<br/>Connection Status"| SWITCH
+    SWITCH -->|"Network Requests<br/>Data Transfer"| NETWORK
+    
+    BATTERY -->|"Power Management<br/>Battery Status"| SWITCH
+    SWITCH -->|"Power Optimization<br/>Battery Usage"| BATTERY
+    
+    SENSORS -->|"Touch Events<br/>Gesture Data"| SWITCH
+    SWITCH -->|"Input Processing<br/>Haptic Feedback"| SENSORS
+    
+    %% Styling
+    classDef gameSystem fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef externalSystem fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef platformSystem fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    
+    class SWITCH,GM,BC,QS,MD,GS,PU,UI,HUD,TUT,ANIM,AUDIO,SAVE,NET,PERF gameSystem
+    class PLAYER,LEADERBOARD,ANALYTICS,ADS,CLOUD,SOCIAL,STORE externalSystem
+    class DEVICE,OS,STORAGE,NETWORK,BATTERY,SENSORS platformSystem

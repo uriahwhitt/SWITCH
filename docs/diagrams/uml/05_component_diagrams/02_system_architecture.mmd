@@ -1,0 +1,214 @@
+graph TB
+    subgraph "Presentation Layer"
+        UI[UIManager]
+        HUD[HUDController]
+        MENU[MenuSystem]
+        POPUP[PopupManager]
+        TUTORIAL[TutorialManager]
+        ANIMATION[AnimationManager]
+    end
+    
+    subgraph "Game Logic Layer"
+        GM[GameManager]
+        BC[BoardController]
+        IM[InputManager]
+        QS[QueueSystem]
+        MD[MatchDetector]
+        GS[GravitySystem]
+        PU[PowerUpExecutor]
+        TD[TileDistributor]
+    end
+    
+    subgraph "Service Layer"
+        SM[SaveManager]
+        AM[AudioManager]
+        NM[NetworkManager]
+        AS[AnalyticsService]
+        AD[AdService]
+        PM[PerformanceMonitor]
+    end
+    
+    subgraph "Infrastructure Layer"
+        DI[DI Container]
+        OP[ObjectPooler]
+        EB[EventBus]
+        CL[ConfigLoader]
+        FACTORY[TileFactory]
+    end
+    
+    subgraph "Data Layer"
+        SO[ScriptableObjects]
+        DB[Local SQLite]
+        PP[PlayerProfile]
+        GC[GameConfig]
+        CACHE[Memory Cache]
+    end
+    
+    %% Presentation Layer Dependencies
+    UI --> GM
+    UI --> AM
+    UI --> SM
+    HUD --> GM
+    HUD --> QS
+    HUD --> PU
+    MENU --> SM
+    MENU --> NM
+    POPUP --> GM
+    TUTORIAL --> GM
+    TUTORIAL --> IM
+    ANIMATION --> EB
+    ANIMATION --> OP
+    
+    %% Game Logic Layer Dependencies
+    GM --> BC
+    GM --> QS
+    GM --> MD
+    GM --> PU
+    GM --> SM
+    GM --> AM
+    GM --> NM
+    GM --> AS
+    GM --> PM
+    
+    BC --> TD
+    BC --> MD
+    BC --> GS
+    BC --> OP
+    BC --> FACTORY
+    
+    IM --> GS
+    IM --> QS
+    IM --> BC
+    
+    QS --> TD
+    QS --> BC
+    QS --> OP
+    
+    MD --> BC
+    MD --> GM
+    MD --> PM
+    
+    GS --> BC
+    GS --> PM
+    
+    PU --> BC
+    PU --> QS
+    PU --> GM
+    PU --> SM
+    
+    TD --> QS
+    TD --> BC
+    TD --> GC
+    
+    %% Service Layer Dependencies
+    SM --> DB
+    SM --> PP
+    SM --> CACHE
+    SM --> NM
+    
+    AM --> OP
+    AM --> GC
+    
+    NM --> DB
+    NM --> AS
+    NM --> PM
+    
+    AS --> NM
+    AS --> SM
+    
+    AD --> NM
+    AD --> AS
+    
+    PM --> GM
+    PM --> BC
+    PM --> QS
+    PM --> MD
+    
+    %% Infrastructure Layer Dependencies
+    DI --> GM
+    DI --> BC
+    DI --> QS
+    DI --> MD
+    DI --> GS
+    DI --> PU
+    DI --> UI
+    DI --> SM
+    DI --> AM
+    DI --> NM
+    
+    OP --> BC
+    OP --> QS
+    OP --> PU
+    OP --> ANIMATION
+    
+    EB --> GM
+    EB --> BC
+    EB --> QS
+    EB --> MD
+    EB --> GS
+    EB --> PU
+    EB --> UI
+    EB --> AM
+    
+    CL --> SO
+    CL --> GC
+    CL --> DI
+    
+    FACTORY --> OP
+    FACTORY --> BC
+    FACTORY --> GC
+    
+    %% Data Layer Dependencies
+    SO --> GC
+    SO --> CL
+    SO --> DI
+    
+    DB --> SM
+    DB --> NM
+    DB --> AS
+    
+    PP --> SM
+    PP --> NM
+    PP --> AS
+    
+    GC --> GM
+    GC --> BC
+    GC --> QS
+    GC --> MD
+    GC --> GS
+    GC --> PU
+    GC --> AM
+    GC --> UI
+    
+    CACHE --> SM
+    CACHE --> NM
+    CACHE --> AS
+    
+    %% Critical Dependencies (Highlighted)
+    GM -.->|"Core Orchestration"| BC
+    GM -.->|"Core Orchestration"| QS
+    GM -.->|"Core Orchestration"| MD
+    GM -.->|"Core Orchestration"| PU
+    
+    BC -.->|"Tile Management"| FACTORY
+    BC -.->|"Performance"| OP
+    BC -.->|"State Updates"| MD
+    
+    QS -.->|"Tile Supply"| TD
+    QS -.->|"Performance"| OP
+    
+    MD -.->|"Match Results"| GM
+    MD -.->|"Performance"| PM
+    
+    %% Styling
+    classDef presentation fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
+    classDef gameLogic fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef service fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef infrastructure fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef data fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    
+    class UI,HUD,MENU,POPUP,TUTORIAL,ANIMATION presentation
+    class GM,BC,IM,QS,MD,GS,PU,TD gameLogic
+    class SM,AM,NM,AS,AD,PM service
+    class DI,OP,EB,CL,FACTORY infrastructure
+    class SO,DB,PP,GC,CACHE data

@@ -1,0 +1,177 @@
+graph TB
+    subgraph "Development Environment"
+        DEV[Developer Machine]
+        UNITY[Unity Editor 2022.3 LTS]
+        GIT[Git Repository]
+        CI[CI/CD Pipeline]
+        
+        DEV --> UNITY
+        UNITY --> GIT
+        GIT --> CI
+    end
+    
+    subgraph "Unity Project Structure"
+        PROJECT[SWITCH Unity Project]
+        
+        subgraph "Assets"
+            SCRIPTS[Scripts/<br/>Core/UI/Services]
+            PREFABS[Prefabs/<br/>Tiles/UI/Effects]
+            SCENES[Scenes/<br/>Main/Game/Menu]
+            MATERIALS[Materials/<br/>Shaders/Textures]
+            AUDIO[Audio/<br/>SFX/Music/Voice]
+            ANIMATIONS[Animations/<br/>Controllers/Clips]
+        end
+        
+        subgraph "Packages"
+            VCONTAINER[VContainer<br/>Dependency Injection]
+            DOTWEEN[DOTween<br/>Animation System]
+            UNITY_INPUT[Unity Input System]
+            UNITY_ANALYTICS[Unity Analytics]
+            UNITY_ADS[Unity Ads]
+        end
+        
+        PROJECT --> SCRIPTS
+        PROJECT --> PREFABS
+        PROJECT --> SCENES
+        PROJECT --> MATERIALS
+        PROJECT --> AUDIO
+        PROJECT --> ANIMATIONS
+        PROJECT --> VCONTAINER
+        PROJECT --> DOTWEEN
+        PROJECT --> UNITY_INPUT
+        PROJECT --> UNITY_ANALYTICS
+        PROJECT --> UNITY_ADS
+    end
+    
+    subgraph "Build Targets"
+        ANDROID[Android Build]
+        IOS[iOS Build]
+        EDITOR[Editor Build]
+        
+        PROJECT --> ANDROID
+        PROJECT --> IOS
+        PROJECT --> EDITOR
+    end
+    
+    subgraph "Mobile Deployment"
+        subgraph "Android Deployment"
+            ANDROID_APK[APK File]
+            ANDROID_AAB[AAB Bundle]
+            GOOGLE_PLAY[Google Play Store]
+            
+            ANDROID --> ANDROID_APK
+            ANDROID --> ANDROID_AAB
+            ANDROID_APK --> GOOGLE_PLAY
+            ANDROID_AAB --> GOOGLE_PLAY
+        end
+        
+        subgraph "iOS Deployment"
+            IOS_IPA[IPA File]
+            APP_STORE[App Store]
+            TESTFLIGHT[TestFlight]
+            
+            IOS --> IOS_IPA
+            IOS_IPA --> APP_STORE
+            IOS_IPA --> TESTFLIGHT
+        end
+    end
+    
+    subgraph "Runtime Architecture"
+        subgraph "Mobile Device"
+            DEVICE[Mobile Device]
+            OS[Operating System<br/>Android/iOS]
+            RUNTIME[Unity Runtime]
+            GAME[SWITCH Game Instance]
+            
+            DEVICE --> OS
+            OS --> RUNTIME
+            RUNTIME --> GAME
+        end
+        
+        subgraph "Game Components"
+            CORE[Core Systems<br/>GameManager/BoardController]
+            UI[UI Systems<br/>UIManager/HUDController]
+            SERVICES[Services<br/>Audio/Save/Network]
+            DATA[Data Layer<br/>Configs/Save Data]
+            
+            GAME --> CORE
+            GAME --> UI
+            GAME --> SERVICES
+            GAME --> DATA
+        end
+    end
+    
+    subgraph "External Services"
+        ANALYTICS[Unity Analytics]
+        ADS[Unity Ads]
+        CLOUD[Unity Cloud Build]
+        COLLAB[Unity Collaborate]
+        
+        GAME --> ANALYTICS
+        GAME --> ADS
+        CI --> CLOUD
+        GIT --> COLLAB
+    end
+    
+    subgraph "Performance Monitoring"
+        PROFILER[Unity Profiler]
+        CRASH_REPORTS[Crash Reports]
+        PERFORMANCE[Performance Metrics]
+        
+        GAME --> PROFILER
+        GAME --> CRASH_REPORTS
+        GAME --> PERFORMANCE
+    end
+    
+    subgraph "Data Storage"
+        LOCAL_STORAGE[Local Storage<br/>SQLite/PlayerPrefs]
+        CLOUD_SAVE[Cloud Save<br/>Unity Cloud Save]
+        CACHE[Memory Cache]
+        
+        GAME --> LOCAL_STORAGE
+        GAME --> CLOUD_SAVE
+        GAME --> CACHE
+    end
+    
+    %% Build Pipeline
+    CI -->|Build Trigger| PROJECT
+    CI -->|Android Build| ANDROID
+    CI -->|iOS Build| IOS
+    
+    %% Deployment Pipeline
+    GOOGLE_PLAY -->|Distribution| DEVICE
+    APP_STORE -->|Distribution| DEVICE
+    TESTFLIGHT -->|Beta Testing| DEVICE
+    
+    %% Runtime Dependencies
+    RUNTIME -->|Load| CORE
+    RUNTIME -->|Load| UI
+    RUNTIME -->|Load| SERVICES
+    RUNTIME -->|Load| DATA
+    
+    %% External Integrations
+    SERVICES -->|Analytics| ANALYTICS
+    SERVICES -->|Advertising| ADS
+    SERVICES -->|Cloud Save| CLOUD_SAVE
+    
+    %% Performance Monitoring
+    CORE -->|Metrics| PROFILER
+    UI -->|Metrics| PROFILER
+    SERVICES -->|Metrics| PROFILER
+    
+    %% Styling
+    classDef development fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef unity fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef build fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef deployment fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef runtime fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef external fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+    classDef monitoring fill:#fff8e1,stroke:#ff8f00,stroke-width:2px
+    
+    class DEV,UNITY,GIT,CI development
+    class PROJECT,SCRIPTS,PREFABS,SCENES,MATERIALS,AUDIO,ANIMATIONS,VCONTAINER,DOTWEEN,UNITY_INPUT,UNITY_ANALYTICS,UNITY_ADS unity
+    class ANDROID,IOS,EDITOR,ANDROID_APK,ANDROID_AAB,IOS_IPA build
+    class GOOGLE_PLAY,APP_STORE,TESTFLIGHT deployment
+    class DEVICE,OS,RUNTIME,GAME,CORE,UI,SERVICES,DATA runtime
+    class ANALYTICS,ADS,CLOUD,COLLAB,LOCAL_STORAGE,CLOUD_SAVE,CACHE external
+    class PROFILER,CRASH_REPORTS,PERFORMANCE monitoring

@@ -49,22 +49,29 @@ User interactions and system boundaries
 ## Diagram Creation Phases
 
 ### Phase 1: Core Architecture (Before Sprint 1)
-- [ ] Core game objects class diagram
-- [ ] Turn execution sequence diagram
-- [ ] Game state machine diagram
-- [ ] Tile distribution activity diagram
+- [x] Core game objects class diagram
+- [x] Turn execution sequence diagram
+- [x] Game state machine diagram
+- [x] Main game loop activity diagram
+- [x] System context component diagram
+- [x] System architecture component diagram
+- [x] Deployment architecture component diagram
 
 ### Phase 2: Mechanics (Before Sprint 2)
-- [ ] Power-up system class diagram
-- [ ] Cascade resolution sequence diagram
-- [ ] Match detection activity diagram
-- [ ] Tile lifecycle state diagram
+- [x] Power-up system class diagram
+- [x] Cascade resolution sequence diagram
+- [x] Match detection sequence diagram
+- [x] Power-up execution sequence diagram
+- [x] Turn state machine diagram
+- [x] Tutorial progressive flow activity diagram
+- [x] Data flow activity diagram
 
 ### Phase 3: Systems (Before Sprint 3)
-- [ ] Unity architecture component diagram
-- [ ] Power-up activation sequence diagram
-- [ ] Player interactions use case diagram
-- [ ] Queue generation activity diagram
+- [x] Unity architecture component diagram
+- [x] Power-up activation sequence diagram
+- [x] Core class relationships diagram
+- [x] System context diagram
+- [x] Deployment architecture diagram
 
 ### Phase 4: Backend (Before Sprint 4)
 - [ ] Backend services class diagram

@@ -1,0 +1,134 @@
+sequenceDiagram
+    participant Player
+    participant GameManager
+    participant NetworkManager
+    participant SimpleLeaderboardService
+    participant FriendCodeSystem
+    participant Firebase
+    participant SocialMedia
+    participant UIManager
+
+    Note over Player, UIManager: Simple Score Submission & Social Sharing Flow
+
+    %% Game Over and Score Submission
+    Player->>GameManager: Game Over (No Valid Moves)
+    GameManager->>GameManager: Calculate Final Score
+    GameManager->>UIManager: Show Game Over Screen
+    
+    UIManager->>Player: Display Final Score
+    UIManager->>Player: Show Options: Play Again, Share, Leaderboard, Continue
+    
+    %% Score Submission to Simple Leaderboard
+    GameManager->>NetworkManager: SubmitScore(finalScore)
+    NetworkManager->>NetworkManager: Basic Validation (score > 0, reasonable range)
+    
+    alt Score Valid
+        NetworkManager->>SimpleLeaderboardService: SubmitScore(score, playerId)
+        SimpleLeaderboardService->>Firebase: Store Score in Global Leaderboard
+        Firebase-->>SimpleLeaderboardService: Score Stored Successfully
+        SimpleLeaderboardService-->>NetworkManager: Submission Complete
+        NetworkManager-->>GameManager: Score Submitted
+        GameManager->>UIManager: Show "Score Submitted" Message
+        
+    else Score Invalid
+        NetworkManager-->>GameManager: Score Rejected
+        GameManager->>UIManager: Show "Score Not Submitted" Message
+    end
+    
+    %% Friend Code Operations
+    alt Player Wants to Add Friend
+        Player->>UIManager: Select "Add Friend"
+        UIManager->>Player: Show Friend Code Input
+        Player->>UIManager: Enter Friend Code
+        UIManager->>FriendCodeSystem: ValidateFriendCode(code)
+        FriendCodeSystem->>Firebase: Check if Code Exists
+        Firebase-->>FriendCodeSystem: Code Valid/Invalid
+        FriendCodeSystem-->>UIManager: Validation Result
+        
+        alt Code Valid
+            UIManager->>Player: Show "Friend Added" Message
+            FriendCodeSystem->>Firebase: Add Friend to Player's List
+        else Code Invalid
+            UIManager->>Player: Show "Invalid Code" Message
+        end
+    end
+    
+    alt Player Wants to Copy Friend Code
+        Player->>UIManager: Select "Copy Friend Code"
+        UIManager->>FriendCodeSystem: GetPlayerFriendCode()
+        FriendCodeSystem->>Firebase: Retrieve Player's Code
+        Firebase-->>FriendCodeSystem: Return Friend Code
+        FriendCodeSystem-->>UIManager: Return Code
+        UIManager->>Player: Copy Code to Clipboard
+        UIManager->>Player: Show "Code Copied" Message
+    end
+    
+    %% Social Media Sharing
+    alt Player Wants to Share Score
+        Player->>UIManager: Select "Share Score"
+        UIManager->>UIManager: Generate Score Screenshot
+        UIManager->>Player: Show Share Options (Twitter, Facebook, Instagram, Copy Link)
+        
+        alt Twitter Share
+            Player->>SocialMedia: Share to Twitter
+            SocialMedia->>SocialMedia: Post with Pre-formatted Message
+            SocialMedia-->>Player: Share Complete
+            
+        else Facebook Share
+            Player->>SocialMedia: Share to Facebook
+            SocialMedia->>SocialMedia: Post with Pre-formatted Message
+            SocialMedia-->>Player: Share Complete
+            
+        else Instagram Share
+            Player->>SocialMedia: Share to Instagram
+            SocialMedia->>SocialMedia: Post with Pre-formatted Message
+            SocialMedia-->>Player: Share Complete
+            
+        else Copy Link
+            Player->>UIManager: Copy Share Link
+            UIManager->>Player: Link Copied to Clipboard
+        end
+    end
+    
+    %% View Leaderboards
+    alt Player Wants to View Global Leaderboard
+        Player->>UIManager: Select "Global Leaderboard"
+        UIManager->>SimpleLeaderboardService: GetTop100()
+        SimpleLeaderboardService->>Firebase: Retrieve Top 100 Scores
+        Firebase-->>SimpleLeaderboardService: Return Leaderboard Data
+        SimpleLeaderboardService-->>UIManager: Return Top 100
+        UIManager->>Player: Display Global Leaderboard
+        
+    else Player Wants to View Friends Leaderboard
+        Player->>UIManager: Select "Friends Leaderboard"
+        UIManager->>SimpleLeaderboardService: GetFriendsScores()
+        SimpleLeaderboardService->>FriendCodeSystem: GetFriendsList()
+        FriendCodeSystem->>Firebase: Retrieve Friends
+        Firebase-->>FriendCodeSystem: Return Friends List
+        FriendCodeSystem-->>SimpleLeaderboardService: Return Friends
+        SimpleLeaderboardService->>Firebase: Get Scores for Friends
+        Firebase-->>SimpleLeaderboardService: Return Friends Scores
+        SimpleLeaderboardService-->>UIManager: Return Friends Leaderboard
+        UIManager->>Player: Display Friends Leaderboard
+    end
+    
+    %% Watch Ad to Continue
+    alt Player Wants to Continue Game
+        Player->>UIManager: Select "Watch Ad to Continue"
+        UIManager->>UIManager: Request Ad
+        UIManager->>Player: Show Ad
+        
+        alt Ad Watched Successfully
+            Player->>UIManager: Ad Complete
+            UIManager->>GameManager: Grant Continue
+            GameManager->>GameManager: Restore Game State
+            GameManager->>UIManager: Return to Game
+            UIManager->>Player: Game Continued
+            
+        else Ad Failed/Cancelled
+            Player->>UIManager: Ad Failed
+            UIManager->>Player: Show "Cannot Continue" Message
+        end
+    end
+    
+    Note over Player, UIManager: Simple Score Submission & Social Flow Complete

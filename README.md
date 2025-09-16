@@ -19,6 +19,7 @@ SWITCH revolutionizes the endless puzzle genre by combining match-3 mechanics wi
 - **Platform**: iOS & Android
 - **Backend**: Firebase
 - **Performance**: 60 FPS target on mobile
+- **Documentation**: Mermaid diagrams for architecture visualization
 
 ## Project Structure
 
@@ -44,6 +45,10 @@ SWITCH/
 - Unity 2022.3 LTS
 - Git
 - Mobile device for testing
+- **Mermaid** (for viewing architecture diagrams)
+  - VS Code: Install "Mermaid Preview" extension
+  - GitHub: Native support for Mermaid diagrams
+  - Online: [Mermaid Live Editor](https://mermaid.live/)
 
 ### Setup
 1. Clone the repository

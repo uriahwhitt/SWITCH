@@ -1,0 +1,250 @@
+stateDiagram-v2
+    [*] --> WaitingForInput
+
+    WaitingForInput --> PowerUpWindow : Power-Up Available
+    WaitingForInput --> ProcessingInput : Direct Input
+    WaitingForInput --> Paused : Pause Requested
+
+    PowerUpWindow --> ProcessingPowerUp : Power-Up Selected
+    PowerUpWindow --> ProcessingInput : Skip Power-Up
+
+    ProcessingPowerUp --> ProcessingInput : Power-Up Complete
+
+    ProcessingInput --> ValidatingInput : Input Received
+    ValidatingInput --> DeterminingDirection : Valid Input
+    ValidatingInput --> WaitingForInput : Invalid Input
+
+    DeterminingDirection --> RequestingTiles : Direction Set
+
+    RequestingTiles --> QueueValidation : Pop Bottom Tiles
+    QueueValidation --> AntiFrustrationCheck : Validate Queue
+    AntiFrustrationCheck --> TileGeneration : Apply Anti-Frustration
+    TileGeneration --> PlacingTiles : Tiles Ready
+
+    PlacingTiles --> InitialMatchCheck : Tiles Placed
+    InitialMatchCheck --> ApplyingGravity : Check Immediate Matches
+
+    ApplyingGravity --> CheckingMatches : Gravity Applied
+
+    CheckingMatches --> ClearingMatches : Matches Found
+    CheckingMatches --> CheckValidMoves : No Matches
+
+    ClearingMatches --> CalculatingScore : Matches Cleared
+    CalculatingScore --> ApplyingPostClearGravity : Score Updated
+
+    ApplyingPostClearGravity --> CheckingCascades : Gravity Applied
+
+    CheckingCascades --> ClearingMatches : Cascades Found
+    CheckingCascades --> QueueRefill : No Cascades
+
+    QueueRefill --> CheckValidMoves : Queue at 10
+
+    CheckValidMoves --> WaitingForInput : Moves Available
+    CheckValidMoves --> GameOverState : No Valid Moves
+
+    Paused --> WaitingForInput : Resume
+    Paused --> [*] : Game Over
+
+    GameOverState --> [*] : Game End
+
+    %% Turn State Details
+    state WaitingForInput {
+        [*] --> Idle
+        Idle --> SwipeDetected : Swipe Input
+        Idle --> TapDetected : Tap Input
+        Idle --> PowerUpAvailable : Power-Up Available
+        
+        SwipeDetected --> [*] : Process Swipe
+        TapDetected --> [*] : Process Tap
+        PowerUpAvailable --> [*] : Show Power-Up Window
+    }
+
+    state PowerUpWindow {
+        [*] --> PowerUpSelection
+        PowerUpSelection --> PowerUpPreview : Power-Up Selected
+        PowerUpSelection --> [*] : Skip Power-Up
+        
+        PowerUpPreview --> PowerUpExecution : Confirm Power-Up
+        PowerUpExecution --> [*] : Power-Up Complete
+    }
+
+    state ProcessingInput {
+        [*] --> InputAnalysis
+        InputAnalysis --> DirectionCalculation : Swipe/Tap
+        InputAnalysis --> PowerUpExecution : Power-Up
+        
+        DirectionCalculation --> [*] : Direction Set
+        PowerUpExecution --> [*] : Power-Up Complete
+    }
+
+    state QueueValidation {
+        [*] --> QueueStateCheck
+        QueueStateCheck --> QueueAnalysis : Validate Queue
+        QueueAnalysis --> [*] : Queue Validated
+    }
+
+    state AntiFrustrationCheck {
+        [*] --> BoardAnalysis
+        BoardAnalysis --> MatchPotentialCheck : Analyze Board
+        MatchPotentialCheck --> DistributionAdjustment : Apply Anti-Frustration
+        DistributionAdjustment --> [*] : Tiles Optimized
+    }
+
+    state TileGeneration {
+        [*] --> GenerateTiles
+        GenerateTiles --> ValidateDistribution : Tiles Generated
+        ValidateDistribution --> [*] : Tiles Ready
+    }
+
+    state InitialMatchCheck {
+        [*] --> ImmediateMatchScan
+        ImmediateMatchScan --> MatchFound : Matches at Placement
+        ImmediateMatchScan --> [*] : No Immediate Matches
+        
+        MatchFound --> [*] : Process Immediate Matches
+    }
+
+    state ApplyingGravity {
+        [*] --> GravityCalculation
+        GravityCalculation --> MovementAnimation : Movement Required
+        GravityCalculation --> [*] : No Movement
+        
+        MovementAnimation --> [*] : Animation Complete
+    }
+
+    state CheckingMatches {
+        [*] --> PatternScanning
+        PatternScanning --> MatchValidation : Patterns Found
+        PatternScanning --> [*] : No Patterns
+        
+        MatchValidation --> [*] : Matches Validated
+    }
+
+    state ClearingMatches {
+        [*] --> MatchAnimation
+        MatchAnimation --> TileRemoval : Animation Complete
+        TileRemoval --> [*] : Tiles Removed
+    }
+
+    state CalculatingScore {
+        [*] --> ScoreCalculation
+        ScoreCalculation --> ComboCalculation : Base Score
+        ComboCalculation --> [*] : Score Calculated
+    }
+
+    state ApplyingPostClearGravity {
+        [*] --> PostClearGravity
+        PostClearGravity --> PostClearAnimation : Movement Required
+        PostClearAnimation --> [*] : Animation Complete
+    }
+
+    state CheckingCascades {
+        [*] --> CascadeDetection
+        CascadeDetection --> CascadeValidation : Cascades Found
+        CascadeDetection --> [*] : No Cascades
+        
+        CascadeValidation --> [*] : Cascades Validated
+    }
+
+    state QueueRefill {
+        [*] --> QueueAnalysis
+        QueueAnalysis --> TileGeneration : Tiles Needed
+        QueueAnalysis --> [*] : Queue at 10
+        
+        TileGeneration --> QueueUpdate : Tiles Generated
+        QueueUpdate --> [*] : Queue Updated
+    }
+
+    state CheckValidMoves {
+        [*] --> ValidMovesScan
+        ValidMovesScan --> MovesFound : Valid Moves Available
+        ValidMovesScan --> NoMovesFound : No Valid Moves
+        
+        MovesFound --> [*] : Continue Game
+        NoMovesFound --> [*] : Game Over
+    }
+
+    %% Performance Monitoring Points
+    note right of ProcessingInput
+        Performance Checkpoint:
+        - Input processing time
+        - Validation efficiency
+    end note
+
+    note right of AntiFrustrationCheck
+        Performance Checkpoint:
+        - Board analysis time
+        - Anti-frustration calculation
+        - Distribution optimization
+    end note
+
+    note right of InitialMatchCheck
+        Performance Checkpoint:
+        - Immediate match detection
+        - Placement validation
+    end note
+
+    note right of ApplyingGravity
+        Performance Checkpoint:
+        - Gravity calculation time
+        - Animation performance
+    end note
+
+    note right of CheckingMatches
+        Performance Checkpoint:
+        - Pattern matching time
+        - Match validation speed
+    end note
+
+    note right of CheckingCascades
+        Performance Checkpoint:
+        - Cascade detection time
+        - Chain resolution efficiency
+    end note
+
+    note right of CheckValidMoves
+        Performance Checkpoint:
+        - Valid moves scanning
+        - Game over detection
+    end note
+
+    %% Error Handling
+    note left of ValidatingInput
+        Error Handling:
+        - Invalid input recovery
+        - Input timeout handling
+        - Malformed gesture recovery
+    end note
+
+    note left of QueueValidation
+        Error Handling:
+        - Queue state validation
+        - Queue corruption recovery
+    end note
+
+    note left of AntiFrustrationCheck
+        Error Handling:
+        - Anti-frustration failure
+        - Distribution error recovery
+    end note
+
+    note left of CheckValidMoves
+        Error Handling:
+        - Valid moves detection failure
+        - Game over false positive
+    end note
+
+    %% Key Features
+    note left of PowerUpWindow
+        Power-Up Timing:
+        - Pre-move strategic planning
+        - Can be skipped
+        - Emergency power-ups available
+    end note
+
+    note left of QueueRefill
+        Queue Management:
+        - Always maintains 10 tiles
+        - Refills after tile consumption
+        - Anti-frustration applied
+    end note

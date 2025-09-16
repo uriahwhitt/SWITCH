@@ -12,7 +12,7 @@
 - [ ] Set up Unity project structure
 - [ ] Create essential scripts
 
-## Sprint 1: Foundation (Weeks 1-2)
+## Sprint 1: Core Mechanics (Weeks 1-2)
 **Goal**: Core Unity architecture and basic game systems
 
 ### Week 1: Core Architecture
@@ -21,58 +21,54 @@
 - Basic 8x8 grid system
 - Tile GameObject creation
 - Object pooling system
+- Directional gravity core system
+- Player input handling (swipe detection)
 
 ### Week 2: Basic Mechanics
 - Tile placement system
-- Basic gravity system
+- Direction flow mechanics
 - Simple match detection
 - Score system foundation
 - Basic UI framework
-
-## Sprint 2: Queue & Intelligence (Weeks 3-4)
-**Goal**: Implement directional gravity and smart distribution
-
-### Week 3: Directional Gravity
-- Directional gravity core system
-- Player input handling (swipe detection)
-- Direction flow mechanics
+- 10-dot queue implementation
 - Visual direction indicators
 
-### Week 4: Queue & Intelligence
-- 10-dot queue implementation
-- Smart tile distribution algorithm
-- Anti-frustration system
-- Cascade detection and resolution
-
-## Sprint 3: Power & Polish (Weeks 5-6)
+## Sprint 2: Polish & Power-ups (Weeks 3-4)
 **Goal**: Power-up system and game polish
 
-### Week 5: Power-Up System
+### Week 3: Power-Up System
 - Power-up base architecture
 - 5 basic power-ups implementation
 - Power-up inventory system
 - Power-up earning system
+- Smart tile distribution algorithm
 
-### Week 6: Polish & Accessibility
+### Week 4: Polish & Accessibility
+- Anti-frustration system
+- Cascade detection and resolution
 - Shape accessibility system
 - Animation system
 - Sound effects integration
 - Performance optimization
 
-## Sprint 4: Business Ready (Weeks 7-8)
-**Goal**: Monetization and launch preparation
+## Sprint 3: Social & Launch (Weeks 5-6)
+**Goal**: Simple social features and launch preparation
 
-### Week 7: Backend Integration
-- Ad integration system
+### Week 5: Simple Leaderboards and Friend Codes
+- Simple leaderboard system
+- Friend code generation
+- Add/remove friends functionality
+- Friends leaderboard view
+- Basic score validation
+- Firebase backend integration
+
+### Week 6: Social Sharing and Launch
+- Social media sharing integration
+- Ad integration (continue feature)
 - Analytics setup
-- Leaderboard system
-- Cloud save functionality
-
-### Week 8: Launch Preparation
-- Hint system implementation
+- Testing and bug fixes
+- App store submission preparation
 - Final performance optimization
-- Beta testing preparation
-- Store assets creation
 
 ## Success Criteria
 Each sprint must meet:

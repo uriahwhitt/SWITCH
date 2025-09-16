@@ -1,0 +1,108 @@
+sequenceDiagram
+    participant BoardController
+    participant MatchDetector
+    participant MatchPattern
+    participant CascadeResolver
+    participant ScoreSystem
+    participant UIManager
+    participant AudioManager
+    participant ParticleSystem
+    participant PerformanceMonitor
+
+    Note over BoardController, PerformanceMonitor: Match Detection & Cascade Resolution
+
+    BoardController->>MatchDetector: CheckForMatches(BoardState)
+    MatchDetector->>PerformanceMonitor: Start Match Detection Timer
+    
+    MatchDetector->>MatchDetector: Initialize Match Results
+    MatchDetector->>MatchDetector: Quick Board Scan for Potential Matches
+    
+    alt No Potential Matches Found
+        MatchDetector->>MatchDetector: Early Exit - No Matches
+        MatchDetector->>BoardController: Return Empty Results
+    else Potential Matches Found
+        MatchDetector->>MatchDetector: Full Pattern Scan
+        
+        loop For Each Board Position
+            MatchDetector->>MatchPattern: Check Pattern at Position
+            MatchPattern->>MatchPattern: Validate Pattern Match
+            
+            alt Pattern Matches
+                MatchPattern->>MatchDetector: Return Match Data
+                MatchDetector->>MatchDetector: Add to Match Results
+                MatchDetector->>MatchDetector: Mark Tiles as Matched
+            end
+        end
+        
+        %% Special Pattern Detection
+        MatchDetector->>MatchDetector: Check for L-Shape Patterns
+        MatchDetector->>MatchDetector: Check for T-Shape Patterns
+        MatchDetector->>MatchDetector: Check for Cross Patterns
+        MatchDetector->>MatchDetector: Check for Five-in-Row Patterns
+    end
+    
+    MatchDetector->>MatchDetector: Validate Match Results
+    MatchDetector->>MatchDetector: Remove Overlapping Matches
+    MatchDetector->>MatchDetector: Sort Matches by Priority
+    
+    alt Matches Found
+        MatchDetector->>ScoreSystem: Calculate Match Scores
+        ScoreSystem->>ScoreSystem: Apply Base Score Multipliers
+        ScoreSystem->>ScoreSystem: Apply Special Pattern Bonuses (L/T/Cross)
+        ScoreSystem->>ScoreSystem: Calculate Combo Bonuses
+        ScoreSystem->>UIManager: Show Score Popups
+        ScoreSystem->>AudioManager: Play Match Sound
+        
+        MatchDetector->>BoardController: Clear Matched Tiles
+        BoardController->>ParticleSystem: Trigger Match Effects
+        BoardController->>UIManager: Animate Tile Removal
+        BoardController->>AudioManager: Play Clear Sound
+        
+        BoardController->>BoardController: Apply Gravity to Remaining Tiles
+        BoardController->>MatchDetector: CheckForCascades()
+        
+        alt Cascades Detected
+            MatchDetector->>CascadeResolver: Initialize Cascade Chain
+            CascadeResolver->>CascadeResolver: Set Cascade Level = 1
+            
+            loop While Cascades Exist
+                CascadeResolver->>CascadeResolver: Process Current Level
+                CascadeResolver->>MatchDetector: Find Cascade Matches
+                MatchDetector->>MatchDetector: Detect New Matches
+                
+                alt New Cascade Matches Found
+                    CascadeResolver->>ScoreSystem: Calculate Cascade Bonus
+                    ScoreSystem->>ScoreSystem: Apply Cascade Multiplier
+                    ScoreSystem->>UIManager: Show Cascade Score
+                    ScoreSystem->>AudioManager: Play Cascade Sound
+                    
+                    CascadeResolver->>BoardController: Clear Cascade Tiles
+                    BoardController->>ParticleSystem: Trigger Cascade Effects
+                    BoardController->>UIManager: Animate Cascade
+                    
+                    CascadeResolver->>CascadeResolver: Increment Cascade Level
+                    CascadeResolver->>BoardController: Apply Gravity
+                    BoardController->>MatchDetector: Check for More Cascades
+                    
+                else No More Cascades
+                    CascadeResolver->>CascadeResolver: End Cascade Chain
+                end
+            end
+            
+            CascadeResolver->>UIManager: Show Final Cascade Celebration
+            CascadeResolver->>AudioManager: Play Cascade Complete Sound
+            CascadeResolver->>ScoreSystem: Apply Final Cascade Bonus
+            
+        else No Cascades
+            MatchDetector->>MatchDetector: End Match Detection
+        end
+        
+    else No Matches Found
+        MatchDetector->>MatchDetector: Return Empty Results
+        MatchDetector->>BoardController: No Action Required
+    end
+    
+    MatchDetector->>PerformanceMonitor: Log Match Detection Time
+    MatchDetector->>BoardController: Return Match Results
+    
+    Note over BoardController, PerformanceMonitor: Match Detection Complete

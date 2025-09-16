@@ -1,0 +1,124 @@
+graph TB
+    subgraph "SWITCH MVP Use Cases"
+        Player[Player]
+        
+        %% Core Gameplay Use Cases
+        PlayGame[Play Endless Game]
+        UsePowerUps[Use Power-Ups]
+        ViewQueue[View Tile Queue]
+        ChangeGravity[Change Gravity Direction]
+        MakeMatches[Make Tile Matches]
+        SurviveLonger[Survive as Long as Possible]
+        
+        %% Social Features
+        ShareScore[Share Score to Social Media]
+        ViewFriendLeaderboard[View Friend Leaderboard]
+        AddFriend[Add Friend via Code]
+        CopyFriendCode[Copy Friend Code]
+        
+        %% System Features
+        ViewGlobalLeaderboard[View Global Leaderboard]
+        WatchAdToContinue[Watch Ad to Continue]
+        ViewSettings[View Settings]
+        EnableAccessibility[Enable Shape Accessibility]
+        ViewTutorial[View Tutorial Hints]
+        
+        %% Premium Features
+        BuyPremium[Buy Premium Upgrade]
+        RemoveAds[Remove All Ads]
+        
+        %% Player connections
+        Player --> PlayGame
+        Player --> UsePowerUps
+        Player --> ViewQueue
+        Player --> ChangeGravity
+        Player --> MakeMatches
+        Player --> SurviveLonger
+        
+        Player --> ShareScore
+        Player --> ViewFriendLeaderboard
+        Player --> AddFriend
+        Player --> CopyFriendCode
+        
+        Player --> ViewGlobalLeaderboard
+        Player --> WatchAdToContinue
+        Player --> ViewSettings
+        Player --> EnableAccessibility
+        Player --> ViewTutorial
+        
+        Player --> BuyPremium
+        Player --> RemoveAds
+        
+        %% Use case relationships
+        PlayGame --> UsePowerUps
+        PlayGame --> ViewQueue
+        PlayGame --> ChangeGravity
+        PlayGame --> MakeMatches
+        PlayGame --> SurviveLonger
+        
+        PlayGame --> WatchAdToContinue
+        PlayGame --> ShareScore
+        
+        ViewSettings --> EnableAccessibility
+        ViewSettings --> CopyFriendCode
+        
+        AddFriend --> ViewFriendLeaderboard
+        
+        BuyPremium --> RemoveAds
+    end
+    
+    subgraph "Excluded Features (Removed from MVP)"
+        GhostChallenges[Ghost Challenges]
+        ReplaySystem[Replay System]
+        ChallengeNotifications[Challenge Notifications]
+        P2PValidation[P2P Score Validation]
+        ComplexFriendSystem[Complex Friend System]
+        InGameFriendSearch[In-Game Friend Search]
+        SpectatorFeatures[Spectator Features]
+        ClubsGuilds[Clubs/Guilds]
+        RealTimeMultiplayer[Real-Time Multiplayer]
+        TournamentSystem[Tournament System]
+        
+        style GhostChallenges fill:#ffcccc
+        style ReplaySystem fill:#ffcccc
+        style ChallengeNotifications fill:#ffcccc
+        style P2PValidation fill:#ffcccc
+        style ComplexFriendSystem fill:#ffcccc
+        style InGameFriendSearch fill:#ffcccc
+        style SpectatorFeatures fill:#ffcccc
+        style ClubsGuilds fill:#ffcccc
+        style RealTimeMultiplayer fill:#ffcccc
+        style TournamentSystem fill:#ffcccc
+    end
+    
+    subgraph "Core Game Mechanics (Unchanged)"
+        DirectionalGravity[Directional Gravity System]
+        QueueSystem[10-Dot Queue System]
+        AntiFrustration[Anti-Frustration Algorithm]
+        ShapeAccessibility[Shape-Based Accessibility]
+        ProgressiveHints[Progressive Tutorial Hints]
+        
+        style DirectionalGravity fill:#ccffcc
+        style QueueSystem fill:#ccffcc
+        style AntiFrustration fill:#ccffcc
+        style ShapeAccessibility fill:#ccffcc
+        style ProgressiveHints fill:#ccffcc
+    end
+    
+    subgraph "Simplified Social Features"
+        FriendCodes[6-Character Friend Codes]
+        ExternalSharing[External Social Media Sharing]
+        SimpleLeaderboards[Simple Server-Side Leaderboards]
+        
+        style FriendCodes fill:#ffffcc
+        style ExternalSharing fill:#ffffcc
+        style SimpleLeaderboards fill:#ffffcc
+    end
+    
+    subgraph "Monetization Focus"
+        WatchAdContinue[Watch Ad to Continue - Primary Revenue]
+        PremiumUpgrade[Premium Upgrade $4.99 - Secondary Revenue]
+        
+        style WatchAdContinue fill:#ffccff
+        style PremiumUpgrade fill:#ffccff
+    end

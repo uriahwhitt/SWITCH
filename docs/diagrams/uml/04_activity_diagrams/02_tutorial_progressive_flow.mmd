@@ -1,0 +1,156 @@
+flowchart TD
+    Start([Tutorial Start]) --> CheckFirstTime{First Time Player?}
+    CheckFirstTime -->|No| SkipTutorial[Skip Tutorial]
+    CheckFirstTime -->|Yes| CheckTutorialProgress{Previous Progress?}
+    CheckTutorialProgress -->|Complete| SkipTutorial
+    CheckTutorialProgress -->|Partial| ResumeTutorial[Resume Tutorial]
+    CheckTutorialProgress -->|None| InitializeTutorial[Initialize Tutorial System]
+    
+    ResumeTutorial --> LoadTutorialProgress[Load Tutorial Progress]
+    LoadTutorialProgress --> ResumeFromStep[Resume from Last Step]
+    ResumeFromStep --> StartBasicControls
+    
+    SkipTutorial --> End([Tutorial Complete])
+    
+    InitializeTutorial --> LoadTutorialConfig[Load Tutorial Configuration]
+    LoadTutorialConfig --> SetupTutorialUI[Setup Tutorial UI Elements]
+    SetupTutorialUI --> StartBasicControls[Start Basic Controls Tutorial]
+    
+    StartBasicControls --> ShowSwipeHint[Show Swipe Instruction]
+    ShowSwipeHint --> WaitSwipeInput[Wait for Swipe Input]
+    WaitSwipeInput --> SwipeReceived{Swipe Received?}
+    SwipeReceived -->|No| CheckSwipeTimeout{Swipe Timeout?}
+    CheckSwipeTimeout -->|Yes| ShowSwipeHint
+    CheckSwipeTimeout -->|No| WaitSwipeInput
+    SwipeReceived -->|Hint Dismiss| DismissHint[Dismiss Hint]
+    DismissHint --> HintDismissChoice{Dismiss Options}
+    HintDismissChoice -->|Never Show Again| DisableHints[Disable All Hints]
+    HintDismissChoice -->|Skip This Hint| ShowSwipeSuccess
+    DisableHints --> ShowSwipeSuccess
+    SwipeReceived -->|Yes| ValidateSwipe[Validate Swipe Direction]
+    ValidateSwipe --> SwipeValid{Swipe Valid?}
+    SwipeValid -->|No| ShowSwipeError[Show Swipe Error Hint]
+    ShowSwipeError --> WaitSwipeInput
+    SwipeValid -->|Yes| ShowSwipeSuccess[Show Swipe Success]
+    ShowSwipeSuccess --> StartQueueTutorial[Start Queue System Tutorial]
+    
+    StartQueueTutorial --> ExplainQueue[Explain Queue System]
+    ExplainQueue --> HighlightQueue[Highlight Queue Display]
+    HighlightQueue --> ShowQueueHint[Show Queue Interaction Hint]
+    ShowQueueHint --> WaitQueueInput[Wait for Queue Interaction]
+    WaitQueueInput --> QueueInputReceived{Queue Input Received?}
+    QueueInputReceived -->|No| CheckQueueTimeout{Queue Timeout?}
+    CheckQueueTimeout -->|Yes| ShowQueueHint
+    CheckQueueTimeout -->|No| WaitQueueInput
+    QueueInputReceived -->|Yes| ValidateQueueInput[Validate Queue Input]
+    ValidateQueueInput --> QueueValid{Queue Input Valid?}
+    QueueValid -->|No| ShowQueueError[Show Queue Error Hint]
+    ShowQueueError --> WaitQueueInput
+    QueueValid -->|Yes| ShowQueueSuccess[Show Queue Success]
+    ShowQueueSuccess --> StartMatchingTutorial[Start Matching Tutorial]
+    
+    StartMatchingTutorial --> ExplainMatching[Explain Match Making]
+    ExplainMatching --> HighlightMatchArea[Highlight Match Area]
+    HighlightMatchArea --> ShowMatchHint[Show Match Making Hint]
+    ShowMatchHint --> WaitMatchInput[Wait for Match Input]
+    WaitMatchInput --> MatchInputReceived{Match Input Received?}
+    MatchInputReceived -->|No| CheckMatchTimeout{Match Timeout?}
+    CheckMatchTimeout -->|Yes| ShowMatchHint
+    CheckMatchTimeout -->|No| WaitMatchInput
+    MatchInputReceived -->|Yes| ValidateMatchInput[Validate Match Input]
+    ValidateMatchInput --> MatchValid{Match Input Valid?}
+    MatchValid -->|No| ShowMatchError[Show Match Error Hint]
+    ShowMatchError --> WaitMatchInput
+    MatchValid -->|Yes| ShowMatchSuccess[Show Match Success]
+    ShowMatchSuccess --> StartGravityTutorial[Start Gravity Tutorial]
+    
+    StartGravityTutorial --> ExplainGravity[Explain Gravity System]
+    ExplainGravity --> ShowGravityDemo[Show Gravity Demonstration]
+    ShowGravityDemo --> HighlightGravity[Highlight Gravity Indicator]
+    HighlightGravity --> ShowGravityHint[Show Gravity Change Hint]
+    ShowGravityHint --> WaitGravityInput[Wait for Gravity Input]
+    WaitGravityInput --> GravityInputReceived{Gravity Input Received?}
+    GravityInputReceived -->|No| CheckGravityTimeout{Gravity Timeout?}
+    CheckGravityTimeout -->|Yes| ShowGravityHint
+    CheckGravityTimeout -->|No| WaitGravityInput
+    GravityInputReceived -->|Yes| ValidateGravityInput[Validate Gravity Input]
+    ValidateGravityInput --> GravityValid{Gravity Input Valid?}
+    GravityValid -->|No| ShowGravityError[Show Gravity Error Hint]
+    ShowGravityError --> WaitGravityInput
+    GravityValid -->|Yes| ShowGravitySuccess[Show Gravity Success]
+    ShowGravitySuccess --> StartPowerUpTutorial[Start Power-Up Tutorial]
+    
+    StartPowerUpTutorial --> ExplainPowerUps[Explain Power-Up System]
+    ExplainPowerUps --> HighlightPowerUpBar[Highlight Power-Up Bar]
+    HighlightPowerUpBar --> ShowPowerUpHint[Show Power-Up Usage Hint]
+    ShowPowerUpHint --> WaitPowerUpInput[Wait for Power-Up Input]
+    WaitPowerUpInput --> PowerUpInputReceived{Power-Up Input Received?}
+    PowerUpInputReceived -->|No| CheckPowerUpTimeout{Power-Up Timeout?}
+    CheckPowerUpTimeout -->|Yes| ShowPowerUpHint
+    CheckPowerUpTimeout -->|No| WaitPowerUpInput
+    PowerUpInputReceived -->|Yes| ValidatePowerUpInput[Validate Power-Up Input]
+    ValidatePowerUpInput --> PowerUpValid{Power-Up Input Valid?}
+    PowerUpValid -->|No| ShowPowerUpError[Show Power-Up Error Hint]
+    ShowPowerUpError --> WaitPowerUpInput
+    PowerUpValid -->|Yes| ShowPowerUpSuccess[Show Power-Up Success]
+    ShowPowerUpSuccess --> StartAdvancedTutorial[Start Advanced Tutorial]
+    
+    StartAdvancedTutorial --> ExplainCombos[Explain Combo System]
+    ExplainCombos --> ExplainCascades[Explain Cascade System]
+    ExplainCascades --> ShowAdvancedHint[Show Advanced Strategy Hint]
+    ShowAdvancedHint --> WaitAdvancedInput[Wait for Advanced Input]
+    WaitAdvancedInput --> AdvancedInputReceived{Advanced Input Received?}
+    AdvancedInputReceived -->|No| CheckAdvancedTimeout{Advanced Timeout?}
+    CheckAdvancedTimeout -->|Yes| ShowAdvancedHint
+    CheckAdvancedTimeout -->|No| WaitAdvancedInput
+    AdvancedInputReceived -->|Yes| ValidateAdvancedInput[Validate Advanced Input]
+    ValidateAdvancedInput --> AdvancedValid{Advanced Input Valid?}
+    AdvancedValid -->|No| ShowAdvancedError[Show Advanced Error Hint]
+    ShowAdvancedError --> WaitAdvancedInput
+    AdvancedValid -->|Yes| ShowAdvancedSuccess[Show Advanced Success]
+    ShowAdvancedSuccess --> CompleteTutorial[Complete Tutorial]
+    
+    CompleteTutorial --> SaveTutorialProgress[Save Tutorial Progress]
+    SaveTutorialProgress --> ShowTutorialComplete[Show Tutorial Complete]
+    ShowTutorialComplete --> End
+    
+    %% Tutorial Exit Handling
+    StartBasicControls -.->|Exit Tutorial| SavePartialProgress[Save Partial Progress]
+    StartQueueTutorial -.->|Exit Tutorial| SavePartialProgress
+    StartMatchingTutorial -.->|Exit Tutorial| SavePartialProgress
+    StartGravityTutorial -.->|Exit Tutorial| SavePartialProgress
+    StartPowerUpTutorial -.->|Exit Tutorial| SavePartialProgress
+    StartAdvancedTutorial -.->|Exit Tutorial| SavePartialProgress
+    
+    SavePartialProgress --> TutorialExitChoice{Exit Options}
+    TutorialExitChoice -->|Save & Exit| SaveTutorialProgress
+    TutorialExitChoice -->|Discard Progress| End
+    TutorialExitChoice -->|Continue Tutorial| StartBasicControls
+    
+    %% Contextual Hint System
+    ShowSwipeHint -.->|Contextual| ContextualHints[Contextual Hint System]
+    ShowQueueHint -.->|Contextual| ContextualHints
+    ShowMatchHint -.->|Contextual| ContextualHints
+    ShowGravityHint -.->|Contextual| ContextualHints
+    ShowPowerUpHint -.->|Contextual| ContextualHints
+    ShowAdvancedHint -.->|Contextual| ContextualHints
+    
+    %% Progress Tracking
+    ShowSwipeSuccess -.->|Progress| ProgressTracker[Progress Tracker]
+    ShowQueueSuccess -.->|Progress| ProgressTracker
+    ShowMatchSuccess -.->|Progress| ProgressTracker
+    ShowGravitySuccess -.->|Progress| ProgressTracker
+    ShowPowerUpSuccess -.->|Progress| ProgressTracker
+    ShowAdvancedSuccess -.->|Progress| ProgressTracker
+    
+    %% Styling
+    classDef startEnd fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef tutorial fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef support fill:#fce4ec,stroke:#c2185b,stroke-width:1px,stroke-dasharray: 5 5
+    
+    class Start,End startEnd
+    class InitializeTutorial,LoadTutorialConfig,SetupTutorialUI,StartBasicControls,ShowSwipeHint,WaitSwipeInput,ValidateSwipe,ShowSwipeError,ShowSwipeSuccess,StartQueueTutorial,ExplainQueue,HighlightQueue,ShowQueueHint,WaitQueueInput,ValidateQueueInput,ShowQueueError,ShowQueueSuccess,StartMatchingTutorial,ExplainMatching,HighlightMatchArea,ShowMatchHint,WaitMatchInput,ValidateMatchInput,ShowMatchError,ShowMatchSuccess,StartGravityTutorial,ExplainGravity,ShowGravityDemo,HighlightGravity,ShowGravityHint,WaitGravityInput,ValidateGravityInput,ShowGravityError,ShowGravitySuccess,StartPowerUpTutorial,ExplainPowerUps,HighlightPowerUpBar,ShowPowerUpHint,WaitPowerUpInput,ValidatePowerUpInput,ShowPowerUpError,ShowPowerUpSuccess,StartAdvancedTutorial,ExplainCombos,ExplainCascades,ShowAdvancedHint,WaitAdvancedInput,ValidateAdvancedInput,ShowAdvancedError,ShowAdvancedSuccess,CompleteTutorial,SaveTutorialProgress,ShowTutorialComplete,SkipTutorial process
+    class CheckFirstTime,SwipeReceived,CheckSwipeTimeout,SwipeValid,QueueInputReceived,CheckQueueTimeout,QueueValid,MatchInputReceived,CheckMatchTimeout,MatchValid,GravityInputReceived,CheckGravityTimeout,GravityValid,PowerUpInputReceived,CheckPowerUpTimeout,PowerUpValid,AdvancedInputReceived,CheckAdvancedTimeout,AdvancedValid decision
+    class ContextualHints,ProgressTracker support

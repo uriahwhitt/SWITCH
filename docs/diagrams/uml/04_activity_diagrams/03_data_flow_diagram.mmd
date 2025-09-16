@@ -1,0 +1,134 @@
+flowchart TD
+    %% Input Data Sources
+    PlayerInput[Player Input<br/>Touch/Swipe/Tap] --> InputManager[Input Manager]
+    SystemEvents[System Events<br/>Pause/Resume/Quit] --> GameManager[Game Manager]
+    
+    %% Core Data Processing
+    InputManager --> InputData[Input Data<br/>Direction/Position/Type]
+    InputData --> GameManager
+    GameManager --> GameState[Game State<br/>Score/Time/Board]
+    
+    %% Board Data Flow
+    GameState --> BoardController[Board Controller]
+    BoardController --> BoardData[Board Data<br/>Tile Positions/States]
+    BoardData --> MatchDetector[Match Detector]
+    MatchDetector --> MatchData[Match Data<br/>Positions/Types/Scores]
+    
+    %% Queue Data Flow
+    GameState --> QueueSystem[Queue System]
+    QueueSystem --> QueueData[Queue Data<br/>Tile Types/Order]
+    QueueData --> TileDistributor[Tile Distributor]
+    TileDistributor --> DistributionData[Distribution Data<br/>Generated Tiles]
+    DistributionData --> QueueSystem
+    
+    %% Anti-Frustration Data Flow
+    BoardData --> AntiFrustrationSystem[Anti-Frustration System]
+    AntiFrustrationSystem --> DistributionModifiers[Distribution Modifiers]
+    DistributionModifiers --> TileDistributor
+    AntiFrustrationSystem --> BoardAnalysis[Board Analysis<br/>Match Potential]
+    BoardAnalysis --> AntiFrustrationSystem
+    
+    %% Score Data Flow
+    MatchData --> ScoreSystem[Score System]
+    ScoreSystem --> ScoreData[Score Data<br/>Points/Combos/Cascades]
+    ScoreData --> GameState
+    
+    %% Power-Up Rewards Data Flow
+    ScoreData --> PowerUpRewardSystem[Power-Up Reward System]
+    PowerUpRewardSystem --> PowerUpInventory[Power-Up Inventory]
+    PowerUpInventory --> PowerUpData
+    PowerUpRewardSystem --> RewardCriteria[Reward Criteria<br/>Score Milestones/Combos]
+    RewardCriteria --> PowerUpRewardSystem
+    
+    %% Power-Up Data Flow
+    GameState --> PowerUpSystem[Power-Up System]
+    PowerUpSystem --> PowerUpData[Power-Up Data<br/>Types/Inventory/Effects]
+    PowerUpData --> GameState
+    
+    %% UI Data Flow
+    GameState --> UIManager[UI Manager]
+    UIManager --> UIData[UI Data<br/>HUD/Menus/Popups]
+    UIData --> PlayerFeedback[Player Feedback<br/>Visual/Audio/Haptic]
+    
+    %% Tutorial Data Flow
+    GameState --> TutorialManager[Tutorial Manager]
+    TutorialManager --> TutorialData[Tutorial Data<br/>Progress/Hints/State]
+    TutorialData --> SaveManager
+    TutorialData --> UIManager
+    
+    %% Save Data Flow
+    GameState --> SaveManager[Save Manager]
+    SaveManager --> SaveData[Save Data<br/>Progress/Settings/Stats]
+    SaveData --> LocalStorage[Local Storage<br/>SQLite/PlayerPrefs]
+    SaveData --> CloudStorage[Cloud Storage<br/>Backup/Sync]
+    
+    %% Network Data Flow
+    ScoreData --> NetworkManager[Network Manager]
+    NetworkManager --> NetworkData[Network Data<br/>Scores/Validation/Leaderboard]
+    NetworkData --> P2PNetwork[P2P Network<br/>Peer Validation]
+    NetworkData --> ExternalServices[External Services<br/>Analytics/Ads]
+    
+    %% Performance Data Flow
+    GameState --> PerformanceMonitor[Performance Monitor]
+    PerformanceMonitor --> PerformanceData[Performance Data<br/>FPS/Memory/CPU]
+    PerformanceData --> AnalyticsService[Analytics Service]
+    PerformanceData --> AdaptiveQuality[Adaptive Quality<br/>Settings Adjustment]
+    
+    %% Audio Data Flow
+    GameState --> AudioManager[Audio Manager]
+    AudioManager --> AudioData[Audio Data<br/>Sounds/Music/Volume]
+    AudioData --> AudioOutput[Audio Output<br/>Speakers/Headphones]
+    
+    %% Configuration Data Flow
+    ConfigFiles[Configuration Files<br/>ScriptableObjects] --> ConfigLoader[Config Loader]
+    ConfigLoader --> ConfigData[Config Data<br/>Game Settings/Balancing]
+    ConfigData --> GameManager
+    ConfigData --> BoardController
+    ConfigData --> QueueSystem
+    ConfigData --> MatchDetector
+    ConfigData --> PowerUpSystem
+    ConfigData --> UIManager
+    ConfigData --> AudioManager
+    
+    %% Data Persistence Flow
+    LocalStorage --> SaveManager
+    CloudStorage --> SaveManager
+    SaveManager --> GameState
+    
+    %% External Data Sources
+    P2PNetwork --> NetworkData
+    ExternalServices --> NetworkData
+    AnalyticsService --> ExternalServices
+    
+    %% Data Validation Points
+    InputData -.->|Validate| InputValidator[Input Validator]
+    MatchData -.->|Validate| MatchValidator[Match Validator]
+    ScoreData -.->|Validate| ScoreValidator[Score Validator]
+    NetworkData -.->|Validate| NetworkValidator[Network Validator]
+    
+    %% Data Transformation Points
+    InputData -.->|Transform| InputTransformer[Input Transformer]
+    BoardData -.->|Transform| BoardTransformer[Board Transformer]
+    QueueData -.->|Transform| QueueTransformer[Queue Transformer]
+    ScoreData -.->|Transform| ScoreTransformer[Score Transformer]
+    
+    %% Data Caching Points
+    GameState -.->|Cache| GameStateCache[Game State Cache]
+    BoardData -.->|Cache| BoardDataCache[Board Data Cache]
+    QueueData -.->|Cache| QueueDataCache[Queue Data Cache]
+    ScoreData -.->|Cache| ScoreDataCache[Score Data Cache]
+    
+    %% Styling
+    classDef input fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef data fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef storage fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef support fill:#f1f8e9,stroke:#558b2f,stroke-width:1px,stroke-dasharray: 5 5
+    
+    class PlayerInput,SystemEvents input
+    class InputManager,GameManager,BoardController,MatchDetector,QueueSystem,TileDistributor,ScoreSystem,PowerUpSystem,UIManager,TutorialManager,SaveManager,NetworkManager,PerformanceMonitor,AudioManager,ConfigLoader,AntiFrustrationSystem,PowerUpRewardSystem process
+    class InputData,GameState,BoardData,MatchData,QueueData,DistributionData,ScoreData,PowerUpData,UIData,TutorialData,SaveData,NetworkData,PerformanceData,AudioData,ConfigData,DistributionModifiers,BoardAnalysis,PowerUpInventory,RewardCriteria data
+    class LocalStorage,CloudStorage storage
+    class P2PNetwork,ExternalServices,AnalyticsService,AudioOutput,ConfigFiles external
+    class InputValidator,MatchValidator,ScoreValidator,NetworkValidator,InputTransformer,BoardTransformer,QueueTransformer,ScoreTransformer,GameStateCache,BoardDataCache,QueueDataCache,ScoreDataCache,AdaptiveQuality support

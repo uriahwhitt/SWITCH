@@ -1,7 +1,7 @@
-# SWITCH 1.3 Product Requirements Document
+# SWITCH - Strategic Wisdom In Tile Clearing Heuristics - 1.3 Product Requirements Document
 **Whitt's End, LLC.**  
 **Version: 1.3 - COMPLETE PRODUCT VISION**  
-**Date: January 2025**  
+**Date: September 16 2025**  
 **Status: APPROVED FOR DEVELOPMENT**
 
 ## 1. Executive Summary
@@ -189,20 +189,37 @@ Left Side of Screen:
 - Statistics tracking
 - Personal best tracking
 
-### 4.7 Leaderboard System
-**Multiple Leaderboard Types**
-- Global all-time high scores
-- Daily leaderboards (reset each day)
-- Weekly tournaments
-- Friends leaderboards
+### 4.7 Simple Leaderboard System
+**Leaderboard Types**
+- Global all-time high scores (top 100)
+- Friends leaderboard (via friend codes)
+- Daily personal best tracking
 
-**Anti-Cheat Measures**
-- Server-side validation
+**Simple Anti-Cheat Measures**
+- Server-side basic validation
 - Statistical anomaly detection
-- Replay system for top scores
-- Community reporting
+- No complex replay system needed
 
-### 4.8 Intelligent Tile Distribution System
+**Friend Code System**
+- 6-character alphanumeric codes
+- Players share codes outside the app
+- Friend leaderboard shows scores of added friends
+- No in-game messaging or challenges
+
+### 4.8 Social Sharing Features
+**Share to Social Media**
+- Share button posts score screenshot to social media
+- Pre-formatted messages with game branding
+- Twitter, Facebook, Instagram integration
+- Viral growth through external sharing
+
+**Social Features**
+- CopyFriendCode() button in settings
+- PasteFriendCode() to add friends
+- ViewFriendsLeaderboard() filtered view
+- ShareToSocial() method in GameOverState
+
+### 4.9 Intelligent Tile Distribution System
 **Anti-Frustration Algorithm**
 
 **Distribution Rules:**
@@ -241,7 +258,7 @@ Response Adjustments:
   - Center congestion → Offer strategic colors
 ```
 
-### 4.9 Power-Up System
+### 4.10 Power-Up System
 **Progressive Power-Up Mechanics**
 
 **Power-Up Categories:**
@@ -292,7 +309,7 @@ Power-Up Inventory:
   - Powers affect scoring
 ```
 
-### 4.10 Accessibility System
+### 4.11 Accessibility System
 **Shape-Based Color System**
 
 **Primary Shape Mapping:**
@@ -318,7 +335,7 @@ Special Variants: Internal symbols for power tiles
 - Accessible Mode: Colors + Shapes
 - Shape-Only Mode: Black & white with shapes only
 
-### 4.11 Tutorial System
+### 4.12 Tutorial System
 **Progressive Hint System**
 
 **Tutorial Philosophy:**
@@ -394,41 +411,38 @@ Portrait Mode (Primary):
 
 ## 6. Monetization Strategy
 
-### 6.1 Ad Integration Model
+### 6.1 Simplified Monetization Model
 ```yaml
 Ad Placements:
-  Between Runs:
-    - Type: Interstitial (skippable after 5s)
-    - Frequency: Every 3 games
-    - Timing: After game over screen
-    
   Continue Opportunity:
     - Type: Rewarded video (30s)
     - Offer: One additional move
     - Limit: Once per run
+    - Core revenue stream
     
 Premium Option ($4.99 one-time):
-  - Remove all forced ads
+  - Remove all ads
   - Unlimited continue videos
   - Double power-up earning rate
   - Extended queue preview (15 dots)
   - Priority leaderboard updates
-  - Exclusive daily challenges
 
-Revenue Split Target:
-  - Ads: 70% of revenue
-  - Premium: 25% of revenue  
-  - Special events: 5% of revenue
+Revenue Focus:
+  - Watch ad to continue: Primary revenue
+  - Premium upgrade: Secondary revenue
+  - No power-up packs initially
+  - No cosmetics initially
 ```
 
 ## 7. Success Metrics & KPIs
 
-### 7.1 MVP Launch Metrics (Months 1-2)
+### 7.1 MVP Launch Metrics (6 Weeks)
 - **Stability**: >99% crash-free sessions
 - **Performance**: 30 FPS on 95% of devices
-- **Retention**: D1 >40%, D7 >20%, D30 >10%
+- **Single-Player Retention**: D1 >40%, D7 >20%, D30 >10%
 - **Session Length**: Average >10 minutes
-- **Downloads**: 10,000 in first month
+- **Downloads**: 5,000 in first month
+- **Social Sharing**: >10% of players share scores
 
 ### 7.2 Growth Metrics (Months 3-6)
 - **MAU**: 100,000 active users
@@ -446,71 +460,62 @@ Revenue Split Target:
 
 ## 8. Development Plan
 
-### 8.1 Complete Product Roadmap
+### 8.1 Simplified 6-Week MVP Roadmap
 ```yaml
-MVP CORE (Months 1-4) - MUST HAVE:
+WEEKS 1-2: Core Game Mechanics
   ✓ Directional gravity system
   ✓ 10-dot queue system
   ✓ Smart tile distribution
-  ✓ Basic power-ups (5 types)
+  ✓ Basic match detection
   ✓ Endless survival mode
-  ✓ Local leaderboard
+  ✓ Basic UI and controls
+
+WEEKS 3-4: Polish and Power-ups
+  ✓ Basic power-ups (5 types)
+  ✓ Power-up inventory system
   ✓ Shape accessibility
   ✓ Progressive hints
-  ✓ Ad integration
-  ✓ Basic analytics
+  ✓ Animation system
+  ✓ Performance optimization
 
-ENHANCED FEATURES (Months 5-6) - SHOULD HAVE:
-  ○ Full power-up suite (15 types)
-  ○ Online leaderboards
-  ○ Daily challenges
-  ○ Cloud save sync
-  ○ Achievement system
-  ○ Friend challenges
-  ○ Replay system
-  ○ Advanced statistics
+WEEK 5: Simple Leaderboards and Friend Codes
+  ✓ Simple leaderboard system
+  ✓ Friend code generation
+  ✓ Add/remove friends
+  ✓ Friends leaderboard view
+  ✓ Basic score validation
 
-COMPETITIVE FEATURES (Months 7-8) - NICE TO HAVE:
-  ○ Real-time multiplayer
-  ○ Tournament system
-  ○ Ghost competitions
-  ○ Clan/team features
-  ○ Weekly events
-  ○ Custom game modes
-
-EXPANSION FEATURES (Months 9-12) - FUTURE GROWTH:
-  ○ Level-based campaign
-  ○ Boss battles
-  ○ Story mode
-  ○ Special tile types
-  ○ Board size variants
+WEEK 6: Social Sharing and Launch
+  ✓ Social media sharing
+  ✓ Ad integration (continue feature)
+  ✓ Analytics setup
+  ✓ Testing and bug fixes
+  ✓ App store submission
 ```
 
-### 8.2 Sprint Plan (MVP)
-**Sprint 1 (Weeks 1-2): Foundation**
+### 8.2 6-Week Sprint Plan
+**Sprint 1 (Weeks 1-2): Core Mechanics**
 - Unity project architecture
 - Grid and matching system
 - Directional gravity core
-- Basic tile graphics
-
-**Sprint 2 (Weeks 3-4): Queue & Intelligence**
 - 10-dot queue implementation
+- Basic tile graphics and UI
+
+**Sprint 2 (Weeks 3-4): Polish & Power-ups**
 - Smart distribution algorithm
 - Anti-frustration system
-- Cascade detection
-
-**Sprint 3 (Weeks 5-6): Power & Polish**
 - 5 basic power-ups
 - Power-up inventory system
 - Shape accessibility
 - Animation system
 
-**Sprint 4 (Weeks 7-8): Business Ready**
-- Ad integration
+**Sprint 3 (Weeks 5-6): Social & Launch**
+- Simple leaderboard system
+- Friend code system
+- Social media sharing
+- Ad integration (continue feature)
 - Analytics setup
-- Hint system
-- Performance optimization
-- Beta testing
+- Testing and submission
 
 ### 8.3 MVP Go-Live Criteria
 ```yaml
@@ -578,11 +583,13 @@ Business Requirements:
 1. Core Mechanic: Directional gravity with player control
 2. Queue System: 10 dots, vertical side display
 3. Accessibility: Shape system (Square=Red, Circle=Blue, Triangle=Yellow)
-4. Monetization: Ads + one continue + premium option
+4. Monetization: Watch ad to continue + premium option ($4.99)
 5. Tutorial: Progressive hints, not forced
 6. Technology: Unity 2022.3 LTS
-7. MVP Timeline: 4 months to launch
+7. MVP Timeline: 6 weeks to launch
 8. Power-ups: Affect scoring, earned through play, unlimited use
+9. Social: Friend codes + social media sharing only
+10. Focus: 90% single-player experience with viral growth potential
 
 ---
 
