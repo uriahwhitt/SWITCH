@@ -26,6 +26,11 @@
  * 
  * Description: [Brief description]
  * Dependencies: [List key dependencies]
+ * 
+ * Educational Notes:
+ * - [Key learning points for developers]
+ * - [Architecture decisions explained]
+ * - [Performance considerations]
  *****************************************************************************/
 ```
 
@@ -51,11 +56,19 @@ private float moveSpeed;      // camelCase for fields
 public void CalculateScore()  // PascalCase for methods
 const int MAX_TILES = 64;     // UPPER_CASE for constants
 
-// Property pattern
+// Property pattern with documentation
 [SerializeField] private int score;
+/// <summary>
+/// Current game score. Updated automatically when matches are made.
+/// Educational: This property demonstrates the backing field pattern for Unity serialization.
+/// </summary>
 public int Score => score;
 
-// Event pattern  
+// Event pattern with documentation
+/// <summary>
+/// Fired when the player's score changes. Used for UI updates and analytics.
+/// Educational: This demonstrates the observer pattern for loose coupling between systems.
+/// </summary>
 public static event Action<int> OnScoreChanged;
 ```
 
@@ -76,8 +89,9 @@ public static event Action<int> OnScoreChanged;
 2. Profile performance
 3. Update SPRINT_STATUS.md
 4. Run ./update-planning-context.sh
-5. Stage and commit changes with conventional format
-6. Push changes to remote repository
+5. **Document all changes** with comprehensive comments and XML documentation
+6. Stage and commit changes with conventional format
+7. Push changes to remote repository
 
 ### Forbidden Practices
 - No deep inheritance (max 2 levels)
@@ -87,12 +101,29 @@ public static event Action<int> OnScoreChanged;
 - No synchronous resource loading
 - No hard-coded values (use ScriptableObjects)
 
-### Common Patterns
+### Documentation Requirements
+- **XML Documentation**: All public methods, properties, and classes must have XML documentation
+- **Inline Comments**: Explain complex algorithms, business logic, and performance optimizations
+- **Educational Comments**: Include learning points and architectural decisions
+- **Code Examples**: Provide usage examples in documentation
+- **Performance Notes**: Document performance implications and optimizations
+- **Unity-Specific Notes**: Explain Unity patterns and best practices
+
+### Common Patterns with Documentation
 ```csharp
-// Singleton
+/// <summary>
+/// Singleton pattern implementation for GameManager.
+/// Educational: This demonstrates the singleton pattern for global state management in Unity.
+/// Performance: Ensures only one instance exists, reducing memory overhead.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     private static GameManager instance;
+    
+    /// <summary>
+    /// Global access point to the GameManager instance.
+    /// Educational: This property demonstrates lazy initialization with error checking.
+    /// </summary>
     public static GameManager Instance 
     { 
         get 
@@ -103,27 +134,43 @@ public class GameManager : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Unity lifecycle method for singleton initialization.
+    /// Educational: This demonstrates Unity's Awake() method and DontDestroyOnLoad pattern.
+    /// </summary>
     private void Awake()
     {
+        // Singleton pattern: ensure only one instance exists
         if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
         }
         instance = this;
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject); // Persist across scene loads
     }
 }
 
-// Object Pool
+/// <summary>
+/// Object pooling implementation for performance optimization.
+/// Educational: This demonstrates the object pool pattern to reduce garbage collection.
+/// Performance: Pre-allocates objects to avoid runtime Instantiate/Destroy calls.
+/// </summary>
 private Queue<GameObject> tilePool = new Queue<GameObject>();
+
+/// <summary>
+/// Initializes the object pool with pre-allocated GameObjects.
+/// Educational: This method shows how to pre-allocate objects for performance.
+/// Performance: Reduces garbage collection by reusing objects instead of creating/destroying.
+/// </summary>
+/// <param name="size">Number of objects to pre-allocate in the pool</param>
 private void InitializePool(int size)
 {
     for (int i = 0; i < size; i++)
     {
         GameObject tile = Instantiate(tilePrefab);
-        tile.SetActive(false);
-        tilePool.Enqueue(tile);
+        tile.SetActive(false); // Start inactive
+        tilePool.Enqueue(tile); // Add to pool
     }
 }
 ```

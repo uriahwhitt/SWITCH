@@ -4,39 +4,80 @@
 
 ### C# Coding Conventions
 ```csharp
-// Class naming: PascalCase
+/// <summary>
+/// GameManager class demonstrates the singleton pattern for global state management.
+/// Educational: This shows how to implement a singleton in Unity with proper lifecycle management.
+/// Performance: Ensures only one instance exists, reducing memory overhead.
+/// </summary>
 public class GameManager : MonoBehaviour
 
-// Method naming: PascalCase
+/// <summary>
+/// Calculates the current score based on matches and multipliers.
+/// Educational: This demonstrates score calculation with performance considerations.
+/// Performance: Uses cached values to avoid repeated calculations.
+/// </summary>
+/// <returns>The calculated score value</returns>
 public void CalculateScore()
 
-// Field naming: camelCase
+// Field naming: camelCase with documentation
+/// <summary>
+/// Movement speed for tile animations. Configurable in Inspector.
+/// Educational: This demonstrates Unity's SerializeField pattern for Inspector access.
+/// </summary>
 private float moveSpeed;
 
-// Property naming: PascalCase
+/// <summary>
+/// Current game score. Read-only property with backing field.
+/// Educational: This demonstrates the property pattern for data encapsulation.
+/// </summary>
 public int Score => score;
 
-// Constant naming: UPPER_CASE
+// Constant naming: UPPER_CASE with documentation
+/// <summary>
+/// Maximum number of tiles on the board. Used for performance optimization.
+/// Educational: This shows how to use constants for magic number elimination.
+/// </summary>
 const int MAX_TILES = 64;
 
-// Event naming: PascalCase with On prefix
+/// <summary>
+/// Event fired when the player's score changes. Used for UI updates and analytics.
+/// Educational: This demonstrates the observer pattern for loose coupling.
+/// </summary>
 public static event Action<int> OnScoreChanged;
 ```
 
 ### Unity-Specific Standards
 ```csharp
-// Use [SerializeField] for private fields needing Inspector access
+/// <summary>
+/// Tile prefab reference for object pooling. Set in Inspector.
+/// Educational: This demonstrates Unity's prefab system and object pooling pattern.
+/// Performance: Prefab references avoid runtime GameObject creation.
+/// </summary>
 [SerializeField] private GameObject tilePrefab;
 
-// Use properties with backing fields
+/// <summary>
+/// Score backing field with public read-only property.
+/// Educational: This demonstrates Unity's SerializeField pattern with property encapsulation.
+/// Performance: Direct field access avoids property call overhead.
+/// </summary>
 [SerializeField] private int score;
 public int Score => score;
 
-// Cache component references in Awake/Start
+/// <summary>
+/// Cached Rigidbody2D reference for performance optimization.
+/// Educational: This demonstrates Unity's component caching pattern.
+/// Performance: Avoids repeated GetComponent calls in Update loops.
+/// </summary>
 private Rigidbody2D rb;
+
+/// <summary>
+/// Unity lifecycle method for component initialization.
+/// Educational: This demonstrates Unity's Awake() method and component caching.
+/// Performance: Caching components in Awake() is more efficient than in Update().
+/// </summary>
 private void Awake()
 {
-    rb = GetComponent<Rigidbody2D>();
+    rb = GetComponent<Rigidbody2D>(); // Cache component reference
 }
 ```
 
@@ -98,10 +139,14 @@ private void Awake()
 ## Documentation Standards
 
 ### Code Documentation
-- XML documentation for public APIs
-- Inline comments for complex algorithms
-- README files for each major system
-- Architecture decision records (ADRs)
+- **XML Documentation**: All public APIs must have comprehensive XML documentation with examples
+- **Inline Comments**: Explain complex algorithms, business logic, and performance optimizations
+- **Educational Comments**: Include learning points and architectural decisions for future developers
+- **Code Examples**: Provide usage examples and patterns in documentation
+- **Performance Notes**: Document performance implications and optimization strategies
+- **Unity-Specific Notes**: Explain Unity patterns, lifecycle methods, and best practices
+- **README Files**: Each major system must have a README with examples and usage
+- **Architecture Decision Records (ADRs)**: Document all significant technical decisions
 
 ### UML Diagrams
 - Class diagrams for system architecture

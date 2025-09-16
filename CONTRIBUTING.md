@@ -95,6 +95,14 @@ Closes #issue-number (if applicable)
 - Use properties with backing fields
 - Use `[SerializeField]` for private fields needing Inspector access
 
+### Documentation Standards
+- **XML Documentation**: All public methods, properties, and classes must have XML documentation
+- **Inline Comments**: Explain complex algorithms, business logic, and performance optimizations
+- **Educational Comments**: Include learning points and architectural decisions
+- **Code Examples**: Provide usage examples in documentation
+- **Performance Notes**: Document performance implications and optimizations
+- **Unity-Specific Notes**: Explain Unity patterns and best practices
+
 ### Unity Standards
 - Implement object pooling for performance
 - Use event-driven architecture
@@ -130,6 +138,9 @@ When creating a pull request, include:
 - [ ] Code follows project standards
 - [ ] Tests pass (`./run-tests.sh`)
 - [ ] Performance targets met
+- [ ] **Comprehensive documentation with educational comments**
+- [ ] **XML documentation for all public APIs**
+- [ ] **Inline comments explaining complex logic**
 - [ ] Documentation updated
 - [ ] Sprint status updated
 - [ ] Planning context updated (`./update-planning-context.sh`)
@@ -182,10 +193,14 @@ When requesting features, include:
 ## Documentation Standards
 
 ### Code Documentation
-- XML documentation for public APIs
-- Inline comments for complex algorithms
-- README files for each major system
-- Architecture decision records (ADRs)
+- **XML Documentation**: All public APIs must have comprehensive XML documentation
+- **Inline Comments**: Explain complex algorithms, business logic, and performance optimizations
+- **Educational Comments**: Include learning points and architectural decisions for future developers
+- **Code Examples**: Provide usage examples and patterns in documentation
+- **Performance Notes**: Document performance implications and optimization strategies
+- **Unity-Specific Notes**: Explain Unity patterns, lifecycle methods, and best practices
+- **README Files**: Each major system must have a README with examples and usage
+- **Architecture Decision Records (ADRs)**: Document all significant technical decisions
 
 ### UML Diagrams
 - Update diagrams when architecture changes
