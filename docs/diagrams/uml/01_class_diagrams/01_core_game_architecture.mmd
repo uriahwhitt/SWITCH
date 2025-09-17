@@ -1,7 +1,9 @@
 classDiagram
     %% SWITCH Core Game Architecture
     %% Sprint 0 Status: Unity Project Setup Complete ✅
-    %% Ready for Sprint 1: Core Mechanics Implementation
+    %% Sprint 1 Status: Core Mechanics Complete ✅
+    %% Sprint 2 Status: Polish & Power-ups Complete ✅
+    %% Ready for Sprint 3: Social & Launch Implementation
     
     %% Core Game Management
     class GameManager {
@@ -834,6 +836,284 @@ classDiagram
         +GameStateData Clone()
     }
 
+    %% Sprint 2: Power-up System
+    class PowerUpManager {
+        -Dictionary~string, IPowerUp~ registeredPowerUps
+        -Dictionary~string, float~ powerUpCooldowns
+        -List~IPowerUp~ powerUpInventory
+        -GameManager gameManager
+        -BoardController boardController
+        +RegisterPowerUp(IPowerUp)
+        +UnregisterPowerUp(string)
+        +ExecutePowerUp(string, PowerUpContext)
+        +AddToInventory(IPowerUp)
+        +RemoveFromInventory(string)
+        +GetPowerUp(string)
+        +GetAvailablePowerUps()
+        +UpdateCooldowns()
+        +CanUsePowerUp(string)
+    }
+
+    class IPowerUp {
+        <<interface>>
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +Sprite Icon
+        +int Cost
+        +float CooldownTime
+        +bool CanUse
+        +bool Execute(PowerUpContext)
+        +void OnPowerUpUsed()
+        +void OnPowerUpExpired()
+    }
+
+    class PowerUpContext {
+        +Vector2Int targetPosition
+        +ColorType targetColor
+        +BoardController boardController
+        +GameManager gameManager
+        +Dictionary~string, object~ customData
+        +PowerUpContext()
+        +void SetTarget(Vector2Int)
+        +void SetColor(ColorType)
+        +T GetCustomData~T~(string)
+        +void SetCustomData(string, object)
+    }
+
+    class ColorBombPowerUp {
+        -ColorType targetColor
+        -bool isExecuting
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +bool Execute(PowerUpContext)
+        +void ClearColorTiles(ColorType)
+        +void OnPowerUpUsed()
+    }
+
+    class LineClearPowerUp {
+        -bool isExecuting
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +bool Execute(PowerUpContext)
+        +void ClearLine(Vector2Int, Direction)
+        +void OnPowerUpUsed()
+    }
+
+    class AreaClearPowerUp {
+        -bool isExecuting
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +bool Execute(PowerUpContext)
+        +void ClearArea(Vector2Int, int)
+        +void OnPowerUpUsed()
+    }
+
+    class TimeFreezePowerUp {
+        -bool isExecuting
+        -float freezeDuration
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +bool Execute(PowerUpContext)
+        +void FreezeTime(float)
+        +void OnPowerUpUsed()
+    }
+
+    class ScoreMultiplierPowerUp {
+        -bool isExecuting
+        -float multiplier
+        -float duration
+        +string PowerUpId
+        +string DisplayName
+        +string Description
+        +bool Execute(PowerUpContext)
+        +void ApplyMultiplier(float, float)
+        +void OnPowerUpUsed()
+    }
+
+    class PowerUpInventory {
+        -List~IPowerUp~ inventory
+        -int maxCapacity
+        -int currentCount
+        +AddPowerUp(IPowerUp)
+        +RemovePowerUp(string)
+        +GetPowerUp(string)
+        +GetAllPowerUps()
+        +HasSpace()
+        +IsFull()
+        +GetCount()
+        +GetCapacity()
+        +Clear()
+    }
+
+    class PowerUpEarningSystem {
+        -Dictionary~string, int~ achievementProgress
+        -Dictionary~string, Achievement~ achievements
+        -GameManager gameManager
+        +RegisterAchievement(Achievement)
+        +UpdateProgress(string, int)
+        +CheckAchievements()
+        +AwardPowerUp(IPowerUp)
+        +GetProgress(string)
+        +GetAllAchievements()
+    }
+
+    %% Sprint 2: Animation System
+    class AnimationSystem {
+        -List~AnimationData~ activeAnimations
+        -Queue~AnimationData~ animationPool
+        -Dictionary~string, AnimationPreset~ animationPresets
+        -int maxConcurrentAnimations
+        -float defaultAnimationDuration
+        -AnimationCurve defaultEaseCurve
+        +PlayAnimation(object, AnimationType, float, float, float)
+        +PlayAnimationPreset(object, string)
+        +StopAnimation(AnimationData)
+        +StopAllAnimations()
+        +GetAnimationData()
+        +ReturnAnimationData(AnimationData)
+        +RegisterPreset(string, AnimationPreset)
+        +UpdateAnimations()
+    }
+
+    class AnimationData {
+        +object target
+        +AnimationType animationType
+        +float duration
+        +float startValue
+        +float endValue
+        +AnimationCurve easeCurve
+        +float currentTime
+        +System.Action onCompleted
+        +bool isActive
+        +AnimationData()
+        +void Update(float)
+        +bool IsComplete()
+        +void Complete()
+        +void Cancel()
+    }
+
+    class AnimationPreset {
+        +string presetId
+        +string presetName
+        +AnimationType animationType
+        +float duration
+        +AnimationCurve easeCurve
+        +float startValue
+        +float endValue
+        +AnimationPreset()
+        +AnimationData CreateAnimation(object)
+    }
+
+    %% Sprint 2: Audio System
+    class SoundEffectManager {
+        -Dictionary~string, AudioClip~ soundEffects
+        -Queue~AudioSource~ audioSourcePool
+        -Dictionary~string, float~ categoryVolumes
+        -int maxConcurrentSounds
+        +PlaySound(string, Vector3)
+        +PlaySound(string, float)
+        +StopSound(string)
+        +StopAllSounds()
+        +SetCategoryVolume(string, float)
+        +GetCategoryVolume(string)
+        +RegisterSound(string, AudioClip)
+        +GetAudioSource()
+        +ReturnAudioSource(AudioSource)
+    }
+
+    %% Sprint 2: Performance System
+    class PerformanceProfiler {
+        -List~PerformanceSample~ performanceSamples
+        -Dictionary~string, PerformanceMetric~ performanceMetrics
+        -float targetFPS
+        -float maxFrameTime
+        -float maxMemoryUsage
+        -int maxDrawCalls
+        -bool isPerformanceGood
+        +StartProfiling()
+        +StopProfiling()
+        +RecordSample(PerformanceSample)
+        +GetPerformanceReport()
+        +CheckPerformanceTargets()
+        +GetCurrentFPS()
+        +GetCurrentMemoryUsage()
+        +GetCurrentDrawCalls()
+    }
+
+    class PerformanceSample {
+        +float timestamp
+        +float fps
+        +float frameTime
+        +float memoryUsage
+        +int drawCalls
+        +int triangles
+        +PerformanceSample()
+        +bool IsWithinTargets(PerformanceTargets)
+        +PerformanceSample Clone()
+    }
+
+    %% Sprint 2: Anti-frustration System
+    class AntiFrustrationSystem {
+        -float frustrationLevel
+        -int consecutiveNoMatches
+        -int maxConsecutiveNoMatches
+        -bool hasGuaranteedMove
+        -GameManager gameManager
+        -BoardController boardController
+        +CheckForGuaranteedMove()
+        +GenerateGuaranteedMove()
+        +UpdateFrustrationLevel()
+        +ResetFrustrationLevel()
+        +GetFrustrationLevel()
+        +HasGuaranteedMove()
+        +ValidateMoveQuality(MoveData)
+    }
+
+    class SmartTileDistribution {
+        -Dictionary~ColorType, int~ colorCounts
+        -float frustrationThreshold
+        -int maxSameColorInRow
+        -Random random
+        +GenerateTile(ColorType)
+        +DistributeTiles(int)
+        +CheckColorBalance()
+        +AdjustDistribution()
+        +GetOptimalColor()
+        +ValidateDistribution()
+    }
+
+    class CascadeSystem {
+        -List~MatchData~ cascadeMatches
+        -int currentCascadeLevel
+        -float cascadeMultiplier
+        -BoardController boardController
+        +ProcessCascade(MatchData[])
+        +DetectChainReactions()
+        +CalculateCascadeScore()
+        +AnimateCascade()
+        +GetCascadeLevel()
+        +GetCascadeMultiplier()
+        +ResetCascade()
+    }
+
+    class ShapeAccessibilitySystem {
+        -Dictionary~string, ShapePattern~ shapePatterns
+        -bool enableColorBlindSupport
+        -bool enableHighContrast
+        -bool enableHints
+        +DetectShapePattern(Vector2Int[])
+        +GenerateHint(ShapePattern)
+        +ApplyAccessibilitySettings()
+        +GetShapePatterns()
+        +ValidatePattern(Vector2Int[])
+        +CalculatePatternScore(ShapePattern)
+    }
+
     %% Enums
     class TileType {
         <<enumeration>>
@@ -1013,3 +1293,44 @@ classDiagram
     SimpleLeaderboardService --> FriendCodeSystem
     SimpleLeaderboardService --> LeaderboardEntry
     GameOverState --> ShareState
+
+    %% Sprint 2: Power-up System Relationships
+    GameManager --> PowerUpManager
+    PowerUpManager --> IPowerUp
+    IPowerUp <|.. ColorBombPowerUp
+    IPowerUp <|.. LineClearPowerUp
+    IPowerUp <|.. AreaClearPowerUp
+    IPowerUp <|.. TimeFreezePowerUp
+    IPowerUp <|.. ScoreMultiplierPowerUp
+    PowerUpManager --> PowerUpContext
+    PowerUpManager --> PowerUpInventory
+    PowerUpManager --> PowerUpEarningSystem
+    PowerUpContext --> BoardController
+    PowerUpContext --> GameManager
+
+    %% Sprint 2: Animation System Relationships
+    GameManager --> AnimationSystem
+    AnimationSystem --> AnimationData
+    AnimationSystem --> AnimationPreset
+    BoardController --> AnimationSystem
+    PowerUpManager --> AnimationSystem
+
+    %% Sprint 2: Audio System Relationships
+    GameManager --> SoundEffectManager
+    PowerUpManager --> SoundEffectManager
+    BoardController --> SoundEffectManager
+    AnimationSystem --> SoundEffectManager
+
+    %% Sprint 2: Performance System Relationships
+    GameManager --> PerformanceProfiler
+    PerformanceProfiler --> PerformanceSample
+    AnimationSystem --> PerformanceProfiler
+    SoundEffectManager --> PerformanceProfiler
+
+    %% Sprint 2: Anti-frustration System Relationships
+    GameManager --> AntiFrustrationSystem
+    AntiFrustrationSystem --> SmartTileDistribution
+    AntiFrustrationSystem --> BoardController
+    BoardController --> CascadeSystem
+    CascadeSystem --> MatchDetector
+    GameManager --> ShapeAccessibilitySystem
