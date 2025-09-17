@@ -14,101 +14,105 @@ sequenceDiagram
     participant AudioManager
     participant PerformanceMonitor
 
-    Note over Player, PerformanceMonitor: Turn Execution Flow - Core Gameplay Loop
+    Note over Player, PerformanceMonitor: CORRECTED Turn Execution Flow - Core Gameplay Loop
 
-    Player->>InputManager: Swipe/Tap Input
-    InputManager->>InputManager: Detect Input Type & Direction
+    %% 1. Board Generation
+    Note over BoardController: Board Generation - Initial board filled with tiles
+    
+    %% 2. Queue Analysis
+    Note over QueueSystem: Queue Analysis - Smart queue generated (15 tiles: 10 visible + 5 buffer)
+    QueueSystem->>TileDistributor: Generate 15 tiles with anti-frustration
+    TileDistributor->>QueueSystem: Return optimized tile sequence
+    QueueSystem->>UIManager: Display 10 visible tiles
+    
+    %% 3. Player Double-Tap Selection
+    Player->>InputManager: Double-Tap Input (select two adjacent tiles)
+    InputManager->>InputManager: Cache Selection Data (positions + direction)
+    InputManager->>BoardController: Store tile positions and relative direction
     InputManager->>PerformanceMonitor: Log Input Processing Time
     
-    alt Swipe Mode
-        InputManager->>GravitySystem: Process Swipe Direction
-        GravitySystem->>GravitySystem: Calculate Gravity Vector
-        GravitySystem->>GameManager: Set Gravity Direction
-    else Tap Mode
-        InputManager->>BoardController: Select Target Position
-        BoardController->>GravitySystem: Infer Direction from Position
-        GravitySystem->>GameManager: Set Inferred Direction
-    end
+    %% 4. Swap Animation
+    BoardController->>BoardController: Preview the swap visually
+    BoardController->>UIManager: Animate tile swap preview
+    BoardController->>AudioManager: Play swap sound
     
-    %% Power-Up Option Window
-    GameManager->>PowerUpSystem: Check Available Powers
-    alt Power-Up Selected
-        Player->>PowerUpSystem: Select Power-Up
-        PowerUpSystem->>GameManager: Execute Power-Up
-        PowerUpSystem->>UIManager: Show Power-Up Preview
-    end
+    %% 5. Match Check
+    BoardController->>MatchDetector: Verify swap creates match of 3+
+    MatchDetector->>MatchDetector: Check for valid matches
     
-    %% Queue Processing with Anti-Frustration
-    GameManager->>QueueSystem: Request Tiles for Direction
-    QueueSystem->>TileDistributor: Get Board State
-    TileDistributor->>TileDistributor: Analyze Match Potential
-    TileDistributor->>TileDistributor: Apply Anti-Frustration
-    TileDistributor->>QueueSystem: Return Optimized Tiles
-    
-    %% Tile Placement
-    QueueSystem->>BoardController: Transfer Bottom 3+ Tiles
-    BoardController->>BoardController: Place at Edge (based on direction)
-    QueueSystem->>UIManager: Update Queue Display
-    
-    %% Initial Match Check (before gravity)
-    BoardController->>MatchDetector: Check Immediate Matches
-    
-    %% Then Apply Gravity
-    BoardController->>GravitySystem: Apply Directional Gravity
-    GravitySystem->>GravitySystem: Calculate Tile Movements
-    GravitySystem->>BoardController: Execute Gravity Movement
-    BoardController->>UIManager: Animate Tile Movement
-    BoardController->>AudioManager: Play Gravity Sound
-    
-    %% Full Match Detection
-    BoardController->>MatchDetector: Full Board Scan
-    MatchDetector->>MatchDetector: Scan Board for Patterns
-    
-    alt Matches Found
-        MatchDetector->>MatchDetector: Identify Match Types (including L/T/Cross)
-        MatchDetector->>ScoreSystem: Calculate Match Scores
-        ScoreSystem->>ScoreSystem: Apply Combo Multipliers
-        ScoreSystem->>UIManager: Update Score Display
-        ScoreSystem->>AudioManager: Play Match Sound
+    alt NO match found
+        MatchDetector->>BoardController: Report invalid swap
+        BoardController->>BoardController: Animate tiles back to original positions
+        BoardController->>UIManager: Show invalid move feedback
+        BoardController->>AudioManager: Play error sound
+        Note over Player: Return to step 3 (Player Double-Tap)
+    else YES match found
+        MatchDetector->>GameManager: Report valid match
+        Note over GameManager: Continue to step 6
         
-        MatchDetector->>BoardController: Clear Matched Tiles
-        BoardController->>UIManager: Animate Tile Removal
-        BoardController->>AudioManager: Play Clear Sound
+        %% 6. Extract Gravity from Cached Selection
+        GameManager->>InputManager: Get cached selection data
+        InputManager->>GameManager: Return tile positions and direction
+        GameManager->>GravitySystem: Calculate gravity from swap direction
+        Note over GravitySystem: Gravity = direction from first tile toward second tile
         
-        BoardController->>GravitySystem: Apply Gravity After Clear
-        GravitySystem->>BoardController: Move Remaining Tiles
+        %% 7. Clear Matched Tiles
+        MatchDetector->>MatchDetector: Identify match types (3 min, 5 max)
+        MatchDetector->>ScoreSystem: Calculate match scores
+        ScoreSystem->>ScoreSystem: Apply combo multipliers
+        ScoreSystem->>UIManager: Update score display
+        ScoreSystem->>AudioManager: Play match sound
         
-        BoardController->>MatchDetector: Check for Cascades
-        MatchDetector->>CascadeResolver: Process Cascade Chain
+        MatchDetector->>BoardController: Clear matched tiles
+        BoardController->>UIManager: Animate tile removal
+        BoardController->>AudioManager: Play clear sound
         
-        loop While Cascades Exist
-            CascadeResolver->>CascadeResolver: Increment Cascade Level
-            CascadeResolver->>ScoreSystem: Calculate Cascade Bonus
-            CascadeResolver->>BoardController: Clear Cascade Matches
-            CascadeResolver->>GravitySystem: Apply Gravity
-            CascadeResolver->>MatchDetector: Check for More Cascades
+        %% 8. Apply Gravity
+        BoardController->>GravitySystem: Apply calculated gravity direction
+        GravitySystem->>GravitySystem: Calculate tile movements
+        GravitySystem->>BoardController: Execute gravity movement
+        BoardController->>UIManager: Animate tile movement
+        BoardController->>AudioManager: Play gravity sound
+        
+        %% 9. Queue Fill (Clockwise Priority)
+        BoardController->>QueueSystem: Request tiles for gaps
+        QueueSystem->>BoardController: Transfer tiles (clockwise: Top→Right→Bottom→Left)
+        BoardController->>BoardController: Place tiles at edges
+        QueueSystem->>UIManager: Update queue display
+        
+        %% 10. Cascade Check
+        BoardController->>MatchDetector: Scan entire board for new matches
+        MatchDetector->>MatchDetector: Check for cascade opportunities
+        
+        %% 11. Cascade Loop
+        loop While cascades exist
+            MatchDetector->>CascadeResolver: Process cascade chain
+            CascadeResolver->>CascadeResolver: Increment cascade level
+            CascadeResolver->>ScoreSystem: Calculate cascade bonus
+            CascadeResolver->>BoardController: Clear ALL simultaneous matches
+            CascadeResolver->>GravitySystem: Apply gravity
+            CascadeResolver->>QueueSystem: Fill gaps from queue
+            CascadeResolver->>MatchDetector: Check for more cascades
         end
         
-        CascadeResolver->>UIManager: Show Cascade Celebration
-        CascadeResolver->>AudioManager: Play Cascade Sound
+        CascadeResolver->>UIManager: Show cascade celebration
+        CascadeResolver->>AudioManager: Play cascade sound
         
-    else No Matches
-        MatchDetector->>GameManager: Report No Matches
-    end
-    
-    %% End of Turn - Game Over Check
-    GameManager->>BoardController: Validate Board State
-    alt No Valid Moves Available
-        GameManager->>GameManager: Trigger Game Over
-        GameManager->>UIManager: Show Game Over Screen
-    else Valid Moves Exist
-        GameManager->>QueueSystem: Refill Queue to 10
-        QueueSystem->>TileDistributor: Generate New Tiles
-        QueueSystem->>UIManager: Update Queue Display
-        
-        GameManager->>PerformanceMonitor: Log Turn Completion Time
-        GameManager->>UIManager: Update Game HUD
-        GameManager->>Player: Ready for Next Input
+        %% 12. Game Over Check
+        GameManager->>BoardController: Verify valid moves remain
+        alt No valid moves available
+            GameManager->>GameManager: Trigger game over
+            GameManager->>UIManager: Show game over screen
+        else Valid moves exist
+            %% 13. Queue Refill
+            GameManager->>QueueSystem: Replenish queue to 15 tiles
+            QueueSystem->>TileDistributor: Generate new tiles
+            QueueSystem->>UIManager: Update queue display
+            
+            GameManager->>PerformanceMonitor: Log turn completion time
+            GameManager->>UIManager: Update game HUD
+            GameManager->>Player: Ready for next turn
+        end
     end
     
     Note over Player, PerformanceMonitor: Turn Complete - Ready for Next Action

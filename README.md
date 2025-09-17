@@ -7,7 +7,10 @@
 SWITCH revolutionizes the endless puzzle genre by combining match-3 mechanics with Tetris-style strategic planning through player-controlled directional gravity, creating the first truly strategic endless match-3 experience.
 
 ### Core Innovation
-- **Directional Gravity**: Player controls where new blocks enter through swipe direction
+- **Directional Gravity**: Player controls where new blocks enter through double-tap selection
+- **Extended Queue System**: 15-tile system (10 visible + 5 buffer) with anti-frustration
+- **Special Tile Systems**: Blocking blocks and power orbs for strategic depth
+- **Momentum-Based Scoring**: Heat system with 1.0x to 10.0x multipliers
 - **Strategic Depth**: Every move affects future board state
 - **Skill-Based**: True high-score competition based on mastery
 - **Endless Gameplay**: No artificial difficulty walls
@@ -67,15 +70,38 @@ SWITCH/
 
 ### Core Mechanics
 - **8x8 Grid**: Strategic tile placement
-- **10-Dot Queue**: Vertical queue showing upcoming tiles
+- **Extended Queue System**: 15-tile system (10 visible + 5 buffer)
+- **Double-Tap Selection**: Select two adjacent tiles to swap
+- **Swap Caching**: Gravity direction extracted from cached selection
+- **Match Validation**: Verify matches before gravity calculation
 - **Directional Gravity**: Player-controlled tile flow
-- **Smart Distribution**: Anti-frustration algorithm
+- **Smart Distribution**: Anti-frustration algorithm with 15-tile look-ahead
 - **Cascade System**: Chain reaction matches
+
+### Momentum-Based Scoring System
+- **Heat System**: Build momentum through skillful play (0-10 heat levels)
+- **Score Multipliers**: 1.0x to 10.0x based on heat level
+- **Position Scoring**: Edge (1x), Transition (2x), Center (3x) multipliers
+- **Pattern Bonuses**: L-shape (+50), Cross (+100) points
+- **Power Orbs**: Instant max heat + massive score boosts
+- **Automatic Decay**: -1.0 heat per turn prevents coasting
+
+### Special Tile Systems
+- **Blocking Blocks**: Stone obstacles with progressive introduction (0% → 10%)
+- **Power Orbs**: Center-spawn system with edge targeting and instant max heat
+- **Strategic Interactions**: Special tiles create multi-turn planning opportunities
 
 ### Power-Up System
 - **Queue Manipulation**: Shuffle, delete, delay tiles
 - **Board Powers**: Clear rows, columns, colors
 - **Emergency Powers**: Undo, hints, safety nets
+- **Power Orbs**: Strategic scoring opportunities with edge targeting
+
+### Dynamic Audio & Visual System
+- **Layered Music**: Base, Rhythm, Melody, Climax layers
+- **Tempo Changes**: 120-180 BPM based on heat level
+- **Visual Heat Meter**: Color-coded with particle effects
+- **Screen Effects**: Edge glow and pulsing at high heat
 
 ### Accessibility
 - **Shape System**: Colors paired with shapes
@@ -88,18 +114,24 @@ SWITCH/
 - **Memory**: <200MB peak usage
 - **Load Time**: <5 seconds
 - **Battery**: <10% per hour
+- **Input Latency**: <100ms for double-tap detection
+- **Special Tiles**: <0.5ms per operation
+- **Swap Caching**: <0.1ms per operation
 
 ## Development Phases
 
 ### Sprint 1: Foundation (Weeks 1-2)
 - Unity project architecture
 - Grid and matching system
-- Directional gravity core
+- Directional gravity core with swap caching
+- Extended 15-tile queue implementation
+- Double-tap selection system
 - Basic tile graphics
 
-### Sprint 2: Queue & Intelligence (Weeks 3-4)
-- 10-dot queue implementation
-- Smart distribution algorithm
+### Sprint 2: Special Tiles & Intelligence (Weeks 3-4)
+- Blocking blocks system with progressive introduction
+- Power orbs system with center spawning
+- Smart distribution algorithm with 15-tile look-ahead
 - Anti-frustration system
 - Cascade detection
 

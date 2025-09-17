@@ -49,6 +49,12 @@ Create an endlessly replayable puzzle game where every decision matters, combini
 - Strategic Depth: Average move consideration time >3 seconds
 - Fairness Perception: <5% of players report "unfair" losses
 - Endless Engagement: Average session >15 minutes
+- Heat System Engagement: Average heat level 3-5, max heat achieved 8+ by skilled players
+- Power Orb Strategy: 60%+ of orbs collected at correct edge, strategic timing decisions
+- Momentum Retention: Players maintain heat levels for 3+ consecutive turns
+- Turn Execution Flow: 95%+ of players understand double-tap selection system
+- Blocking Block Management: Players successfully clear 80%+ of blocking blocks
+- Extended Queue System: Players utilize 15-tile look-ahead for strategic planning
 
 ## 3. Target Market
 
@@ -100,14 +106,14 @@ Create an endlessly replayable puzzle game where every decision matters, combini
 - Multiple solutions for any situation
 - Skill directly translates to higher scores
 
-### 4.2 Block Queue System
-**10-Dot Vertical Queue Mechanics**
+### 4.2 Extended Block Queue System (15-Tile System)
+**Enhanced Queue Mechanics with Anti-Frustration**
 
 **Visual Layout:**
 ```
 Left Side of Screen:
 ┌─┐
-│●│ <- Top (10th position) - Newest
+│●│ <- Top (10th position) - Newest Visible
 │●│
 │○│
 │●│
@@ -119,19 +125,30 @@ Left Side of Screen:
 │●│ <- Bottom (1st position) - Next to play
 └─┘
 ↓ (Drops to board)
+
+Hidden Buffer (5 tiles):
+┌─┐
+│●│ <- Buffer 5
+│●│ <- Buffer 4
+│●│ <- Buffer 3
+│●│ <- Buffer 2
+│●│ <- Buffer 1
+└─┘
 ```
 
-**Queue Flow Sequence:**
-1. Player makes match selection (swipe direction)
-2. Bottom 3+ dots "fall" from queue to board edge
-3. Tiles enter from directional edge
-4. Board evaluates for matches
-5. Matches clear with animation
-6. New dots calculated based on board state
-7. New dots drop into top of queue
-8. Check for cascade matches
-9. If cascades found, repeat from step 5
-10. Turn complete, await player input
+**CORRECTED Queue Flow Sequence:**
+1. Player double-taps to select two adjacent tiles
+2. System caches selection data (positions + direction)
+3. Swap animation previews the move
+4. Match validation occurs BEFORE gravity calculation
+5. If NO match: Tiles animate back, return to step 1
+6. If YES match: Extract gravity from cached selection
+7. Clear matched tiles (3 min, 5 max)
+8. Apply gravity in calculated direction
+9. Fill gaps from queue (clockwise: Top→Right→Bottom→Left)
+10. Check for cascades and process all matches
+11. Refill queue to 15 tiles (10 visible + 5 buffer)
+12. Turn complete, await player input
 
 **Queue Animation Details:**
 - Drop Animation: 0.3s smooth fall from queue to board
@@ -146,16 +163,99 @@ Left Side of Screen:
 - Risk/reward for center positioning
 - Pressure release through strategic matches
 
-### 4.4 Endless Survival Mode (Primary Game Mode)
-**Core Gameplay Loop**
-1. View block queue
-2. Analyze board state  
-3. Choose move direction
-4. Execute match
-5. New blocks flow from chosen direction
-6. Score multiplies with survival time
-7. Speed gradually increases
-8. Game ends when no moves available
+### 4.4 Special Tile Systems
+
+#### 4.4.1 Blocking Blocks (Obstacles)
+**Strategic Obstacles System**
+- **Appearance**: Stone/concrete texture (clearly different from regular tiles)
+- **Behavior**: Can be swapped with regular tiles, but only if the regular tile creates a match
+- **Cannot be matched**: Blocking blocks cannot be part of matches themselves
+- **Removal**: Must reach board edge to be removed
+- **Progressive Introduction**:
+  - Tutorial: 1 block for demonstration
+  - First 5 minutes: 0% spawn rate
+  - After 5 minutes: 2% spawn rate
+  - Every 2 minutes: +1% (max 10%)
+- **Strategic Purpose**: Forces multi-turn planning and creates board obstacles
+
+#### 4.4.2 Power Orbs (Center-Spawn System)
+**High-Value Objective System**
+- **Spawn Location**: 4 center cells (3,3), (4,3), (3,4), (4,4)
+- **Trigger**: When center cell is cleared by match
+- **Spawn Chance**: 5% base, increasing over time (max 15%)
+- **Timing**: IMMEDIATE spawn before gravity/cascade
+- **Orb Properties**:
+  - **Appearance**: Glowing colored orbs (not tiles)
+  - **Colors/Targets**: Blue→TOP, Green→RIGHT, Yellow→BOTTOM, Purple→LEFT
+  - **Scoring**: Base 5,000 points + 500 per turn survived
+  - **Cascade Multipliers**: Apply if collected during cascade
+  - **Success**: Only scores if reaching correct edge
+  - **Failure**: Falls off wrong edge = lost (no points)
+- **Visual Indicators**: Matching colored edge glow/border, pulsing glow effect
+
+### 4.5 Endless Survival Mode (Primary Game Mode)
+**Enhanced Core Gameplay Loop**
+1. View extended block queue (10 visible + 5 buffer)
+2. Analyze board state including special tiles
+3. Double-tap to select two adjacent tiles
+4. System validates match before gravity calculation
+5. If valid: Extract gravity from cached selection
+6. Clear matches and apply gravity
+7. Fill gaps clockwise (Top→Right→Bottom→Left)
+8. Process cascades and special tile interactions
+9. Build momentum through skillful play
+10. Collect power orbs for massive score boosts
+11. Manage blocking blocks strategically
+12. Speed gradually increases
+13. Game ends when no moves available
+
+### 4.6 Momentum-Based Scoring System
+**Revolutionary Heat System**
+- Players build "heat" through complex matches and cascades
+- Heat creates score multipliers (1.0x to 10.0x)
+- Automatic decay prevents coasting (-1.0 heat per turn)
+- Rewards sustained skillful play over lucky single moves
+
+**Heat Generation Mechanics**
+- Match-3: 0 heat (maintains current level minus decay)
+- Match-4: +1.0 heat (good momentum boost)
+- Match-5: +2.0 heat (excellent momentum boost)
+- Cascades: +0.5 heat per level (cumulative)
+- L-shape patterns: +1.0 heat (pattern bonus)
+- Cross patterns: +1.5 heat (rare pattern bonus)
+
+**Heat Level Categories**
+- **Cold (0-2 heat)**: 1.0x-2.8x multiplier, blue visual theme
+- **Warm (3-4 heat)**: 3.7x-4.6x multiplier, yellow visual theme
+- **Hot (5-7 heat)**: 5.5x-7.3x multiplier, orange visual theme
+- **Blazing (8-9 heat)**: 8.2x-9.1x multiplier, red visual theme
+- **Inferno (10 heat)**: 10.0x multiplier, white-hot visual theme
+
+**Position-Based Scoring**
+- **Edge Positions**: 1x multiplier (outer ring)
+- **Transition Positions**: 2x multiplier (middle ring)
+- **Center Positions**: 3x multiplier (center 4 cells)
+- **Pattern Bonuses**: L-shape (+50 points), Cross (+100 points)
+
+**Power Orb Integration**
+- Spawn in center when center cells are cleared
+- Move toward specific colored edges over time
+- **Instant Max Heat**: Collecting at correct edge = 10.0 heat immediately
+- **Age-Based Scoring**: Base 5,000 points + 500 per turn survived
+- **Strategic Timing**: Risk/reward decisions about when to collect
+- **Wrong Edge**: 0 points, orb is lost
+
+**Dynamic Audio System**
+- **Layered Music**: Base, Rhythm, Melody, Climax layers
+- **Tempo Changes**: 120-180 BPM based on heat level
+- **Heartbeat Effect**: Accelerates with heat level
+- **Sound Effects**: Heat up, cool down, power orb explosion
+
+**Visual Heat System**
+- **Heat Meter**: Color-coded bar with multiplier display
+- **Particle Effects**: Heat, flame, and inferno particles
+- **Screen Effects**: Edge glow and pulsing effects
+- **Color Transitions**: Smooth color changes between heat levels
 
 **Difficulty Progression**
 - Speed increase every 60 seconds
@@ -163,7 +263,7 @@ Left Side of Screen:
 - Special blocks appear at milestones
 - No artificial difficulty walls
 
-### 4.5 Daily Challenges & Events
+### 4.7 Daily Challenges & Events
 **Daily Challenge Types**
 - Fixed Seed Challenge: Everyone gets same block sequence
 - Speed Run: Hit target score in time limit
@@ -176,7 +276,7 @@ Left Side of Screen:
 - Special rule modifiers
 - Seasonal themes
 
-### 4.6 Progression & Engagement Systems
+### 4.8 Progression & Engagement Systems
 **Player Level System**
 - XP earned through gameplay
 - Levels unlock new features
@@ -189,7 +289,7 @@ Left Side of Screen:
 - Statistics tracking
 - Personal best tracking
 
-### 4.7 Simple Leaderboard System
+### 4.9 Simple Leaderboard System
 **Leaderboard Types**
 - Global all-time high scores (top 100)
 - Friends leaderboard (via friend codes)
@@ -206,7 +306,7 @@ Left Side of Screen:
 - Friend leaderboard shows scores of added friends
 - No in-game messaging or challenges
 
-### 4.8 Social Sharing Features
+### 4.10 Social Sharing Features
 **Share to Social Media**
 - Share button posts score screenshot to social media
 - Pre-formatted messages with game branding
@@ -219,7 +319,7 @@ Left Side of Screen:
 - ViewFriendsLeaderboard() filtered view
 - ShareToSocial() method in GameOverState
 
-### 4.9 Intelligent Tile Distribution System
+### 4.11 Intelligent Tile Distribution System
 **Anti-Frustration Algorithm**
 
 **Distribution Rules:**
@@ -258,7 +358,7 @@ Response Adjustments:
   - Center congestion → Offer strategic colors
 ```
 
-### 4.10 Power-Up System
+### 4.12 Power-Up System
 **Progressive Power-Up Mechanics**
 
 **Power-Up Categories:**
@@ -309,7 +409,7 @@ Power-Up Inventory:
   - Powers affect scoring
 ```
 
-### 4.11 Accessibility System
+### 4.13 Accessibility System
 **Shape-Based Color System**
 
 **Primary Shape Mapping:**
@@ -335,7 +435,7 @@ Special Variants: Internal symbols for power tiles
 - Accessible Mode: Colors + Shapes
 - Shape-Only Mode: Black & white with shapes only
 
-### 4.12 Tutorial System
+### 4.14 Tutorial System
 **Progressive Hint System**
 
 **Tutorial Philosophy:**
@@ -389,24 +489,39 @@ Device Support:
 - AWS Amplify (scalable, more complex)
 - Custom Node.js (maximum control)
 
-### 5.4 Screen Layout Architecture
+### 5.4 Screen Layout Architecture - FINAL DESIGN
 ```
-Portrait Mode (Primary):
+Portrait Mode (Mobile Primary):
 ┌────────────────────────────┐
-│      Score | Timer         │ 5%
+│ 1,247,350      [☰]         │ 4%   Score & Menu
+├────────────────────────────┤
+│🔥 ██████░░░░ x6.5 HEAT!    │ 5%   Heat Meter
 ├──┬─────────────────────────┤
 │Q │                         │
-│u │                         │
-│e │      8x8 Game Grid      │ 70%
-│u │                         │
-│e │                         │
+│u │    8x8 Game Grid        │ 70%  Main Game Area
+│e │   (with edge glows)     │
 │10│                         │
-├──┴────┬────────────────────┤
-│Powers │ Next Move Preview  │ 15%
-│[][][]│  Direction Arrow    │
-├───────┴────────────────────┤
-│  Pause │ Settings │ Menu   │ 5%
+├──┴─────────────────────────┤
+│ [🔥][💣][⚡]   CASCADE x3!  │ 10%  Powers & Feedback
+├────────────────────────────┤
+│    [Ad Banner 320x50]      │ 5%   Monetization
 └────────────────────────────┘
+Percentage Breakdown:
+- 4% - Score & Menu Bar
+- 5% - Heat Meter Bar  
+- 70% - Game Grid & Queue
+- 10% - Power-ups & Active Feedback
+- 5% - Ad Banner Space
+- 6% - Padding/margins
+
+Key UI Components:
+1. TopBarUI - Score display with animated counter and hamburger menu
+2. HeatMeterUI - Visual heat meter with color transitions and particle effects
+3. GameAreaUI - 8x8 grid with queue panel and edge glow indicators
+4. PowerFeedbackUI - Power-up slots with dynamic feedback display
+5. AdBannerUI - Monetization banner with fallback content
+6. MenuOverlayUI - Pause menu with full game options
+7. UIScaler - Responsive design for different device types
 ```
 
 ## 6. Monetization Strategy
@@ -463,14 +578,17 @@ Revenue Focus:
 ### 8.1 Simplified 6-Week MVP Roadmap
 ```yaml
 WEEKS 1-2: Core Game Mechanics
-  ✓ Directional gravity system
-  ✓ 10-dot queue system
-  ✓ Smart tile distribution
+  ✓ Directional gravity system with swap caching
+  ✓ Extended 15-tile queue system (10 visible + 5 buffer)
+  ✓ Smart tile distribution with anti-frustration
   ✓ Basic match detection
   ✓ Endless survival mode
   ✓ Basic UI and controls
+  ✓ Swap validation before gravity calculation
 
-WEEKS 3-4: Polish and Power-ups
+WEEKS 3-4: Special Tiles and Polish
+  ✓ Blocking blocks system with progressive introduction
+  ✓ Power orbs system with center spawning
   ✓ Basic power-ups (5 types)
   ✓ Power-up inventory system
   ✓ Shape accessibility
@@ -497,13 +615,16 @@ WEEK 6: Social Sharing and Launch
 **Sprint 1 (Weeks 1-2): Core Mechanics**
 - Unity project architecture
 - Grid and matching system
-- Directional gravity core
-- 10-dot queue implementation
+- Directional gravity core with swap caching
+- Extended 15-tile queue implementation
 - Basic tile graphics and UI
+- Swap validation system
 
-**Sprint 2 (Weeks 3-4): Polish & Power-ups**
+**Sprint 2 (Weeks 3-4): Special Tiles & Polish**
 - Smart distribution algorithm
 - Anti-frustration system
+- Blocking blocks system
+- Power orbs system
 - 5 basic power-ups
 - Power-up inventory system
 - Shape accessibility
@@ -580,16 +701,18 @@ Business Requirements:
 ## 11. Final Design Lock
 
 **CONFIRMED UNCHANGEABLE ELEMENTS:**
-1. Core Mechanic: Directional gravity with player control
-2. Queue System: 10 dots, vertical side display
-3. Accessibility: Shape system (Square=Red, Circle=Blue, Triangle=Yellow)
-4. Monetization: Watch ad to continue + premium option ($4.99)
-5. Tutorial: Progressive hints, not forced
-6. Technology: Unity 2022.3 LTS
-7. MVP Timeline: 6 weeks to launch
-8. Power-ups: Affect scoring, earned through play, unlimited use
-9. Social: Friend codes + social media sharing only
-10. Focus: 90% single-player experience with viral growth potential
+1. Core Mechanic: Directional gravity with player control and swap caching
+2. Queue System: Extended 15-tile system (10 visible + 5 buffer)
+3. Special Tiles: Blocking blocks and power orbs systems
+4. Turn Execution: Double-tap selection with match validation before gravity
+5. Accessibility: Shape system (Square=Red, Circle=Blue, Triangle=Yellow)
+6. Monetization: Watch ad to continue + premium option ($4.99)
+7. Tutorial: Progressive hints, not forced
+8. Technology: Unity 2022.3 LTS
+9. MVP Timeline: 6 weeks to launch
+10. Power-ups: Affect scoring, earned through play, unlimited use
+11. Social: Friend codes + social media sharing only
+12. Focus: 90% single-player experience with viral growth potential
 
 ---
 

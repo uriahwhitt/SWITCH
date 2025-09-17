@@ -128,6 +128,35 @@ classDiagram
         +PlayActivationEffect()
     }
 
+    class BlockingTile {
+        -BlockingTileData data
+        -bool canBeSwapped
+        -bool isAtEdge
+        +Initialize(BlockingTileData)
+        +CanBeSwappedWith(ITile)
+        +MoveTowardEdge()
+        +ReachEdge()
+        +SetMatched(bool)
+        +PlayRemovalAnimation()
+    }
+
+    class PowerOrb {
+        -PowerOrbData data
+        -Vector2Int boardPosition
+        -Vector2Int targetEdge
+        -int age
+        -bool isActive
+        -bool hasReachedEdge
+        +Initialize(PowerOrbData, Vector2Int)
+        +MoveTowardEdge()
+        +ReachTargetEdge()
+        +LoseOrb()
+        +GetScoreValue()
+        +bool ReachedCorrectEdge()
+        -Vector2Int GetMovementDirection()
+        -bool IsAtTargetEdge(Vector2Int)
+    }
+
     class TileFactory {
         -IObjectPool tilePool
         -TileConfig config
@@ -143,16 +172,21 @@ classDiagram
         -IInputManager inputSystem
         -SwipeDetector swipeDetector
         -TapDetector tapDetector
+        -DoubleTapDetector doubleTapDetector
         -InputBuffer inputBuffer
         -InputMode currentMode
         -InputConfig config
+        -SwapCache swapCache
         +Initialize(InputConfig config)
         +ProcessInput()
         +HandleSwipe(SwipeData swipe)
         +HandleTap(TapData tap)
+        +HandleDoubleTap(DoubleTapData tap)
         +SwitchMode(InputMode mode)
         +EnableInput()
         +DisableInput()
+        +CacheSwapData(Vector2Int, Vector2Int)
+        +GetCachedSwapData()
     }
 
     class SwipeDetector {
@@ -176,13 +210,42 @@ classDiagram
         +IsDoubleTap()
     }
 
-    %% Queue System
+    class DoubleTapDetector {
+        -float maxDoubleTapTime
+        -float maxDoubleTapDistance
+        -Vector2 firstTapPosition
+        -float firstTapTime
+        -bool waitingForSecondTap
+        +DetectDoubleTap(Vector2 position, float time)
+        +ValidateDoubleTap(DoubleTapData tap)
+        +GetDoubleTapPosition(Vector2 screenPos)
+        +ResetDoubleTap()
+    }
+
+    class SwapCache {
+        -Vector2Int tile1Position
+        -Vector2Int tile2Position
+        -Direction swapDirection
+        -float timestamp
+        -bool isValid
+        +CacheSwap(Vector2Int pos1, Vector2Int pos2)
+        +GetSwapDirection()
+        +GetTilePositions()
+        +IsValid()
+        +Clear()
+        +GetTimestamp()
+    }
+
+    %% Extended Queue System (15-Tile)
     class QueueManager {
         -IQueueSystem queueSystem
         -TileDistributor distributor
         -QueueDisplay display
         -QueueState currentState
         -QueueConfig config
+        -int visibleQueueSize
+        -int bufferSize
+        -int totalQueueSize
         +Initialize(QueueConfig config)
         +ProcessQueue()
         +RequestTiles(int count)
@@ -191,6 +254,9 @@ classDiagram
         +GetQueueStatistics()
         +ShuffleQueue()
         +PeekNextTiles(int count)
+        +GetVisibleTiles()
+        +GetBufferTiles()
+        +RefillTo15Tiles()
     }
 
     class TileDistributor {
@@ -198,12 +264,15 @@ classDiagram
         -AntiFrustrationSystem antiFrustration
         -StatisticalAnalyzer analyzer
         -Queue~TileData~ tileQueue
+        -LookAheadAnalyzer lookAheadAnalyzer
         +GenerateTiles(int count)
         +AnalyzeBoardState(BoardState state)
         +AdjustDistribution(BoardAnalysis analysis)
         +GetOptimalTiles(BoardState state, int count)
         +ValidateDistribution(TileData[] tiles)
         +ApplyAntiFrustration(BoardState state)
+        +Analyze15TileLookAhead()
+        +GenerateStrategicTiles(BoardState state)
     }
 
     %% Match Detection
@@ -372,38 +441,160 @@ classDiagram
         +PreloadPowerUps()
     }
 
-    %% UI System
-    class UIManager {
-        -IUIManager uiSystem
-        -Dictionary~UIScreen, UIPanel~ screens
-        -HUDController hudController
-        -MenuSystem menuSystem
-        -PopupManager popupManager
-        -UIAnimator animator
-        -UIConfig config
-        +Initialize(UIConfig config)
-        +TransitionToScreen(UIScreen screen)
-        +UpdateGameHUD(GameStateData state)
-        +ShowGameOverScreen(GameOverData data)
-        +HandleBackButton()
-        +SetUIScale(float scale)
-        +ShowNotification(string message)
+    %% UI System - FINAL DESIGN
+    class MainUIManager {
+        -TopBarUI topBarUI
+        -HeatMeterUI heatMeterUI
+        -GameAreaUI gameAreaUI
+        -PowerFeedbackUI powerFeedbackUI
+        -AdBannerUI adBannerUI
+        -MenuOverlayUI menuOverlayUI
+        -UIScaler uiScaler
+        -bool isInitialized
+        +InitializeUI()
+        +ShowCascadeFeedback(int cascadeCount)
+        +ShowPointsPopup(int points)
+        +ShowAchievementFeedback(string achievement)
+        +UpdateQueue(List~object~ queueData)
+        +SetCurrentQueueIndex(int index)
+        +SetEdgeGlows(bool top, bool right, bool bottom, bool left)
+        +AddPowerUp(int index, int count)
+        +SetPremiumUser(bool isPremium)
+        +GetDeviceType()
+        +IsInitialized()
     }
 
-    class HUDController {
-        -ScoreDisplay scoreDisplay
-        -TimerDisplay timerDisplay
-        -PowerUpBar powerUpBar
-        -QueueVisualizer queueVisualizer
-        -ComboIndicator comboIndicator
-        -DirectionIndicator directionIndicator
-        +UpdateScore(int score, bool animate)
-        +UpdateTimer(float time)
-        +UpdatePowerUps(PowerUpInventory inventory)
-        +UpdateQueue(QueueState queue)
-        +ShowCombo(int comboLevel)
-        +ShowDirectionFeedback(Direction direction)
-        +PulseElement(HUDElement element)
+    class TopBarUI {
+        -TextMeshProUGUI scoreText
+        -Button menuButton
+        -TextMeshProUGUI timerText
+        -bool animateScore
+        -long currentDisplayedScore
+        -long targetScore
+        +OnScoreChanged(long newScore)
+        +OnMenuButtonClick()
+        +SetTimeTrialMode(bool isTimeTrial)
+        +UpdateTimer(float timeRemaining)
+        +SetScoreImmediate(long score)
+    }
+
+    class HeatMeterUI {
+        -Slider heatBar
+        -Image heatBarFill
+        -TextMeshProUGUI multiplierText
+        -TextMeshProUGUI heatLabel
+        -ParticleSystem heatParticles
+        -ParticleSystem flameParticles
+        -ParticleSystem infernoParticles
+        -Color currentColor
+        -bool isPulsing
+        +OnMomentumChanged(float newMomentum)
+        +OnHeatLevelChanged(float newHeat)
+        +TriggerInfernoEffect()
+        +SetHeatImmediate(float heat)
+    }
+
+    class GameAreaUI {
+        -GameObject queuePanel
+        -Transform queueContainer
+        -GameObject boardGrid
+        -Transform tileContainer
+        -LineRenderer[] edgeGlows
+        -List~Image~ queueDots
+        -GameObject[,] tileSlots
+        -int currentQueueIndex
+        +UpdateQueue(List~object~ queueData)
+        +SetCurrentQueueIndex(int index)
+        +SetEdgeGlow(int edgeIndex, bool active)
+        +SetAllEdgeGlows(bool top, bool right, bool bottom, bool left)
+        +GetTileSlotPosition(Vector2Int gridPos)
+    }
+
+    class PowerFeedbackUI {
+        -Button[] powerSlots
+        -Image[] powerIcons
+        -TextMeshProUGUI[] powerCounts
+        -TextMeshProUGUI cascadeText
+        -TextMeshProUGUI pointsPopup
+        -int[] powerCounts
+        -bool[] powerReady
+        +AddPowerUp(int index, int count)
+        +SetPowerUpCount(int index, int count)
+        +ShowCascadeFeedback(int cascadeCount)
+        +ShowPointsPopup(int points)
+        +ShowAchievementFeedback(string achievement)
+        +GetPowerUpCount(int index)
+        +IsPowerUpReady(int index)
+    }
+
+    class AdBannerUI {
+        -GameObject adContainer
+        -GameObject alternativeContent
+        -TextMeshProUGUI alternativeText
+        -bool premiumUser
+        -bool adsEnabled
+        -bool adLoaded
+        +LoadAd()
+        +ShowAd()
+        +ShowAlternativeContent()
+        +SetPremiumUser(bool isPremium)
+        +SetAdsEnabled(bool enabled)
+        +IsAdLoaded()
+        +GetBannerDimensions()
+    }
+
+    class MenuOverlayUI {
+        -GameObject menuPanel
+        -CanvasGroup menuCanvasGroup
+        -Button resumeButton
+        -Button settingsButton
+        -Button howToPlayButton
+        -Button achievementsButton
+        -Button leaderboardsButton
+        -Button shareScoreButton
+        -Button mainMenuButton
+        -bool isMenuOpen
+        +OpenMenu()
+        +CloseMenu()
+        +ToggleMenu()
+        +SetMenuTitle(string title)
+        +SetButtonEnabled(MenuButtonType buttonType, bool enabled)
+        +IsMenuOpen()
+    }
+
+    class UIScaler {
+        -float targetAspectRatio
+        -float tabletAspectRatio
+        -DeviceType currentDeviceType
+        -float currentAspectRatio
+        -bool hasNotch
+        -Canvas mainCanvas
+        -CanvasScaler canvasScaler
+        +DetectDevice()
+        +AdjustForDevice()
+        +GetDeviceType()
+        +GetAspectRatio()
+        +HasNotch()
+        +IsTablet()
+        +IsPhone()
+        +ForceAdjustment()
+    }
+
+    class UIColors {
+        +Color background
+        +Color scoreText
+        +Color heatCold
+        +Color heatWarm
+        +Color heatHot
+        +Color heatBlazing
+        +Color heatInferno
+        +Color powerReady
+        +Color edgeTop
+        +Color edgeRight
+        +Color edgeBottom
+        +Color edgeLeft
+        +GetHeatColor(float heatLevel)
+        +GetHeatLabel(float heatLevel)
     }
 
     %% Tutorial System
@@ -556,10 +747,59 @@ classDiagram
         +int id
         +bool isPowerUp
         +PowerUpType powerType
+        +Sprite defaultSprite
+        +Sprite brandedSprite
+        +Color tintColor
+        +Shape accessibilityShape
         +TileData(TileType type, Color color)
         +bool Equals(TileData other)
         +string ToString()
         +TileData Clone()
+    }
+
+    class BlockingTileData {
+        <<struct>>
+        +TileType type
+        +Sprite stoneTexture
+        +Color stoneColor
+        +float spawnChance
+        +float maxSpawnChance
+        +int progressiveIncrease
+        +BlockingTileData()
+        +float GetSpawnChance(float gameTime)
+        +bool CanSpawn(float gameTime)
+    }
+
+    class PowerOrbData {
+        <<struct>>
+        +OrbColor color
+        +Vector2Int targetEdge
+        +int baseScore
+        +int ageBonus
+        +float baseSpawnChance
+        +float maxSpawnChance
+        +Vector2Int[] centerSpawnPositions
+        +Color glowColor
+        +float pulseSpeed
+        +float glowIntensity
+        +int CalculateScore(int age)
+        +float GetSpawnChance(float gameTime)
+        +Vector2Int GetRandomSpawnPosition()
+    }
+
+    class SwapCacheData {
+        <<struct>>
+        +Vector2Int tile1Position
+        +Vector2Int tile2Position
+        +Direction swapDirection
+        +float timestamp
+        +bool isValid
+        +SwapCacheData()
+        +void CacheSwap(Vector2Int pos1, Vector2Int pos2)
+        +Direction GetSwapDirection()
+        +Vector2Int[] GetTilePositions()
+        +bool IsValid()
+        +void Clear()
     }
 
     class MatchData {
@@ -593,14 +833,26 @@ classDiagram
     %% Enums
     class TileType {
         <<enumeration>>
-        Red
+        Basic
+        PowerUp
+        Blocking
+        PowerOrb
+    }
+
+    class OrbColor {
+        <<enumeration>>
         Blue
         Green
         Yellow
         Purple
-        Orange
-        Special
-        PowerUp
+    }
+
+    class Shape {
+        <<enumeration>>
+        Circle
+        Square
+        Triangle
+        Diamond
     }
 
     class Direction {
@@ -677,7 +929,7 @@ classDiagram
     GameManager --> QueueManager
     GameManager --> MatchDetector
     GameManager --> PowerUpExecutor
-    GameManager --> UIManager
+    GameManager --> MainUIManager
     GameManager --> TutorialManager
     GameManager --> SaveManager
     GameManager --> AudioManager
@@ -687,12 +939,16 @@ classDiagram
     BoardController --> ITile
     ITile <|.. BasicTile
     ITile <|.. PowerTile
+    ITile <|.. BlockingTile
+    ITile <|.. PowerOrb
     BoardController --> TileFactory
     BoardController --> DirectionalGravity
     BoardController --> MatchDetector
 
     InputManager --> SwipeDetector
     InputManager --> TapDetector
+    InputManager --> DoubleTapDetector
+    InputManager --> SwapCache
 
     QueueManager --> TileDistributor
     QueueManager --> TileData
@@ -715,9 +971,29 @@ classDiagram
     TutorialManager --> HintSystem
     TutorialManager --> TutorialSequencer
 
-    UIManager --> HUDController
+    %% UI System Relationships
+    MainUIManager --> TopBarUI
+    MainUIManager --> HeatMeterUI
+    MainUIManager --> GameAreaUI
+    MainUIManager --> PowerFeedbackUI
+    MainUIManager --> AdBannerUI
+    MainUIManager --> MenuOverlayUI
+    MainUIManager --> UIScaler
+    MainUIManager --> UIColors
+    
+    TopBarUI --> UIColors
+    HeatMeterUI --> UIColors
+    GameAreaUI --> UIColors
+    PowerFeedbackUI --> UIColors
+    AdBannerUI --> UIColors
+    MenuOverlayUI --> UIColors
 
     TileData --> TileType
+    TileData --> Shape
+    BlockingTile --> BlockingTileData
+    PowerOrb --> PowerOrbData
+    PowerOrbData --> OrbColor
+    SwapCache --> SwapCacheData
     MatchData --> MatchType
     DirectionalGravity --> Direction
     PowerUpExecutor --> PowerUpType

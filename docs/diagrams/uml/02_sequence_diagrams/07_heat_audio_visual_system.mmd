@@ -1,0 +1,144 @@
+sequenceDiagram
+    participant MomentumSystem
+    participant HeatAudioManager
+    participant HeatUIManager
+    participant AudioSource
+    participant ParticleSystem
+    participant UI Components
+    
+    Note over MomentumSystem, UI Components: Heat-Based Audio and Visual System
+    
+    Note over MomentumSystem: Heat Level Change Event
+    MomentumSystem->>HeatAudioManager: OnHeatLevelChanged(newHeat)
+    MomentumSystem->>HeatUIManager: OnHeatLevelChanged(newHeat)
+    
+    Note over HeatAudioManager: Audio System Response
+    HeatAudioManager->>HeatAudioManager: GetHeatLevel(newHeat)
+    
+    alt Heat Level: Cold (0-2)
+        HeatAudioManager->>AudioSource: FadeOutLayer(rhythmLayer)
+        HeatAudioManager->>AudioSource: FadeOutLayer(melodyLayer)
+        HeatAudioManager->>AudioSource: FadeOutLayer(climaxLayer)
+        HeatAudioManager->>HeatAudioManager: StopHeartbeat()
+        Note right of HeatAudioManager: Base layer only<br/>Tempo: 120 BPM
+        
+    else Heat Level: Warm (3-4)
+        HeatAudioManager->>AudioSource: FadeInLayer(rhythmLayer)
+        HeatAudioManager->>AudioSource: FadeOutLayer(melodyLayer)
+        HeatAudioManager->>AudioSource: FadeOutLayer(climaxLayer)
+        HeatAudioManager->>HeatAudioManager: StopHeartbeat()
+        Note right of HeatAudioManager: Base + Rhythm<br/>Tempo: 120-150 BPM
+        
+    else Heat Level: Hot (5-7)
+        HeatAudioManager->>AudioSource: FadeInLayer(rhythmLayer)
+        HeatAudioManager->>AudioSource: FadeInLayer(melodyLayer)
+        HeatAudioManager->>AudioSource: FadeOutLayer(climaxLayer)
+        HeatAudioManager->>HeatAudioManager: StartHeartbeat()
+        Note right of HeatAudioManager: Base + Rhythm + Melody<br/>Tempo: 150-170 BPM
+        
+    else Heat Level: Blazing (8-9)
+        HeatAudioManager->>AudioSource: FadeInLayer(rhythmLayer)
+        HeatAudioManager->>AudioSource: FadeInLayer(melodyLayer)
+        HeatAudioManager->>AudioSource: FadeInLayer(climaxLayer)
+        HeatAudioManager->>HeatAudioManager: StartHeartbeat()
+        Note right of HeatAudioManager: All layers + Heartbeat<br/>Tempo: 170-180 BPM
+        
+    else Heat Level: Inferno (10)
+        HeatAudioManager->>AudioSource: FadeInLayer(rhythmLayer)
+        HeatAudioManager->>AudioSource: FadeInLayer(melodyLayer)
+        HeatAudioManager->>AudioSource: FadeInLayer(climaxLayer)
+        HeatAudioManager->>HeatAudioManager: StartHeartbeat()
+        HeatAudioManager->>HeatAudioManager: PlayInfernoBurst()
+        Note right of HeatAudioManager: All layers + Effects<br/>Tempo: 180 BPM + Explosion
+    end
+    
+    Note over HeatAudioManager: Update Tempo
+    HeatAudioManager->>HeatAudioManager: UpdateTempo(newHeat)
+    HeatAudioManager->>HeatAudioManager: GetCurrentBPM()
+    Note right of HeatAudioManager: BPM = 120 + (heat × 6)
+    
+    HeatAudioManager->>AudioSource: SetPitch(baseLayer, pitch)
+    HeatAudioManager->>AudioSource: SetPitch(rhythmLayer, pitch)
+    HeatAudioManager->>AudioSource: SetPitch(melodyLayer, pitch)
+    HeatAudioManager->>AudioSource: SetPitch(climaxLayer, pitch)
+    
+    Note over HeatUIManager: Visual System Response
+    HeatUIManager->>HeatUIManager: GetHeatLevelColor(heatLevel)
+    
+    alt Heat Level: Cold (0-2)
+        HeatUIManager->>UI Components: TransitionToColor(blue)
+        HeatUIManager->>ParticleSystem: Stop heatParticles
+        HeatUIManager->>ParticleSystem: Stop flameParticles
+        HeatUIManager->>ParticleSystem: Stop infernoParticles
+        HeatUIManager->>UI Components: UpdateScreenGlow(0f)
+        HeatUIManager->>HeatUIManager: StopPulsing()
+        Note right of HeatUIManager: Blue tint, no effects
+        
+    else Heat Level: Warm (3-4)
+        HeatUIManager->>UI Components: TransitionToColor(yellow)
+        HeatUIManager->>ParticleSystem: Play heatParticles
+        HeatUIManager->>ParticleSystem: Stop flameParticles
+        HeatUIManager->>ParticleSystem: Stop infernoParticles
+        HeatUIManager->>UI Components: UpdateScreenGlow(0f)
+        HeatUIManager->>HeatUIManager: StopPulsing()
+        Note right of HeatUIManager: Yellow tint, slight glow
+        
+    else Heat Level: Hot (5-7)
+        HeatUIManager->>UI Components: TransitionToColor(orange)
+        HeatUIManager->>ParticleSystem: Play heatParticles
+        HeatUIManager->>ParticleSystem: Play flameParticles
+        HeatUIManager->>ParticleSystem: Stop infernoParticles
+        HeatUIManager->>UI Components: UpdateScreenGlow(0f)
+        HeatUIManager->>HeatUIManager: StartPulsing()
+        Note right of HeatUIManager: Orange tint, pulsing glow
+        
+    else Heat Level: Blazing (8-9)
+        HeatUIManager->>UI Components: TransitionToColor(red)
+        HeatUIManager->>ParticleSystem: Play heatParticles
+        HeatUIManager->>ParticleSystem: Play flameParticles
+        HeatUIManager->>ParticleSystem: Stop infernoParticles
+        HeatUIManager->>UI Components: UpdateScreenGlow(0.5f)
+        HeatUIManager->>HeatUIManager: StartPulsing()
+        Note right of HeatUIManager: Red tint, flame particles
+        
+    else Heat Level: Inferno (10)
+        HeatUIManager->>UI Components: TransitionToColor(white)
+        HeatUIManager->>ParticleSystem: Play heatParticles
+        HeatUIManager->>ParticleSystem: Play flameParticles
+        HeatUIManager->>ParticleSystem: Play infernoParticles
+        HeatUIManager->>UI Components: UpdateScreenGlow(1f)
+        HeatUIManager->>HeatUIManager: StartPulsing()
+        HeatUIManager->>HeatUIManager: TriggerInfernoEffect()
+        Note right of HeatUIManager: White-hot, screen effects
+    end
+    
+    Note over HeatUIManager: Update Heat Meter
+    HeatUIManager->>UI Components: UpdateHeatMeter(momentum)
+    HeatUIManager->>UI Components: UpdateMultiplierText()
+    HeatUIManager->>UI Components: UpdateHeatLevelText()
+    
+    Note over HeatUIManager: Color Transition Animation
+    HeatUIManager->>HeatUIManager: TransitionColorCoroutine(targetColor)
+    loop Color transition duration
+        HeatUIManager->>UI Components: Lerp color over time
+    end
+    
+    Note over HeatUIManager: Particle Effect Updates
+    HeatUIManager->>ParticleSystem: Update emission rates
+    HeatUIManager->>ParticleSystem: Update particle colors
+    HeatUIManager->>ParticleSystem: Update particle sizes
+    
+    Note over HeatUIManager: Screen Glow Animation
+    HeatUIManager->>HeatUIManager: UpdateScreenGlowCoroutine(intensity)
+    loop Glow transition duration
+        HeatUIManager->>UI Components: Lerp glow intensity
+    end
+    
+    Note over HeatUIManager: Pulsing Effect
+    alt Pulsing Active
+        loop While pulsing
+            HeatUIManager->>UI Components: Pulse scale with sine wave
+        end
+    end
+    
+    Note over MomentumSystem, UI Components: Audio and Visual Updates Complete

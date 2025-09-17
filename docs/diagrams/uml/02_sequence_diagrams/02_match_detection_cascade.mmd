@@ -8,6 +8,8 @@ sequenceDiagram
     participant AudioManager
     participant ParticleSystem
     participant PerformanceMonitor
+    participant BlockingTileManager
+    participant PowerOrbManager
 
     Note over BoardController, PerformanceMonitor: Match Detection & Cascade Resolution
 
@@ -58,6 +60,12 @@ sequenceDiagram
         BoardController->>UIManager: Animate Tile Removal
         BoardController->>AudioManager: Play Clear Sound
         
+        %% Special Tile Interactions
+        BoardController->>BlockingTileManager: Check Blocking Tile Interactions
+        BlockingTileManager->>BlockingTileManager: Update Blocking Tile States
+        BoardController->>PowerOrbManager: Check Center Cell Clears
+        PowerOrbManager->>PowerOrbManager: Spawn Power Orbs if Center Cleared
+        
         BoardController->>BoardController: Apply Gravity to Remaining Tiles
         BoardController->>MatchDetector: CheckForCascades()
         
@@ -79,6 +87,10 @@ sequenceDiagram
                     CascadeResolver->>BoardController: Clear Cascade Tiles
                     BoardController->>ParticleSystem: Trigger Cascade Effects
                     BoardController->>UIManager: Animate Cascade
+                    
+                    %% Special Tile Cascade Interactions
+                    BoardController->>BlockingTileManager: Update Blocking Tiles in Cascade
+                    BoardController->>PowerOrbManager: Check Power Orb Cascade Effects
                     
                     CascadeResolver->>CascadeResolver: Increment Cascade Level
                     CascadeResolver->>BoardController: Apply Gravity

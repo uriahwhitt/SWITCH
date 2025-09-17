@@ -1,0 +1,363 @@
+classDiagram
+    %% Momentum-Based Scoring System Classes
+    
+    class MomentumSystem {
+        -float momentum
+        -float maxMomentum
+        -float turnEndDecay
+        -float multiplierScale
+        -float match3Heat
+        -float match4Heat
+        -float match5Heat
+        -float cascadeHeat
+        -float lShapeHeat
+        -float crossHeat
+        -float powerOrbHeatBoost
+        -bool enableDebugLogs
+        +float CurrentMomentum
+        +float MaxMomentum
+        +float HeatPercentage
+        +HeatLevel CurrentHeatLevel
+        +event Action~float~ OnMomentumChanged
+        +event Action~float~ OnHeatLevelChanged
+        +event Action OnMaxHeatReached
+        +event Action OnHeatDecay
+        +float AddMatchHeat(int matchSize)
+        +float AddCascadeHeat(int cascadeLevel)
+        +float AddPatternHeat(PatternType patternType)
+        +void TriggerPowerOrbBoost()
+        +void ApplyTurnEndDecay()
+        +float GetScoreMultiplier()
+        +HeatLevel GetHeatLevel(float heat)
+        +Color GetHeatColor()
+        +void ResetMomentum()
+        -void SetMomentum(float newMomentum)
+        -void AddHeat(float heatAmount)
+        -void LogDebug(string message)
+    }
+    
+    class HeatLevel {
+        <<enumeration>>
+        Cold
+        Warm
+        Hot
+        Blazing
+        Inferno
+    }
+    
+    class PatternType {
+        <<enumeration>>
+        LShape
+        TShape
+        Cross
+    }
+    
+    class TurnScoreCalculator {
+        -int tileBaseValue
+        -int edgeMultiplier
+        -int transitionMultiplier
+        -int centerMultiplier
+        -int lShapeBonus
+        -int crossBonus
+        -int powerOrbBasePoints
+        -bool enableDebugLogs
+        -MomentumSystem momentumSystem
+        +TurnScoreResult CalculateTurnScore(TurnResult result)
+        -int CalculateBaseScore(List~Tile~ clearedTiles)
+        -int CalculatePatternBonus(TurnResult result)
+        -float CalculateHeatGain(TurnResult result)
+        -void ApplyHeatGain(float heatGained, TurnResult result)
+        -int GetPositionMultiplier(Vector2Int position)
+        -float GetMatchHeat(int matchSize)
+        -void LogDebug(string message)
+    }
+    
+    class TurnScoreResult {
+        +int BaseScore
+        +int PatternBonus
+        +int PowerOrbScore
+        +int TotalBeforeMultiplier
+        +float Multiplier
+        +int FinalScore
+        +float HeatGained
+        +float FinalHeat
+        +MomentumSystem.HeatLevel HeatLevel
+    }
+    
+    class TurnResult {
+        +List~Tile~ ClearedTiles
+        +List~int~ MatchSizes
+        +int CascadeLevel
+        +bool HasLShape
+        +bool HasCross
+        +bool PowerOrbCollected
+        +PowerOrb CollectedPowerOrb
+    }
+    
+    class HeatAudioManager {
+        -AudioSource baseLayer
+        -AudioSource rhythmLayer
+        -AudioSource melodyLayer
+        -AudioSource climaxLayer
+        -AudioClip[] heatUpSounds
+        -AudioClip[] coolDownSounds
+        -AudioClip infernoBurst
+        -AudioClip powerOrbExplosion
+        -float baseBPM
+        -float maxBPM
+        -float tempoChangeSpeed
+        -float fadeInSpeed
+        -float fadeOutSpeed
+        -bool enableHeartbeat
+        -AudioClip heartbeatSound
+        -float baseHeartbeatInterval
+        -bool enableDebugLogs
+        -MomentumSystem momentumSystem
+        -Coroutine heartbeatCoroutine
+        -Coroutine tempoChangeCoroutine
+        -float currentBPM
+        -HeatLevel lastHeatLevel
+        -bool isHeartbeatActive
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        +void OnHeatDecay()
+        -void InitializeAudioLayers()
+        -void ConfigureAudioLayer(AudioSource audioSource, float volume, bool loop)
+        -void UpdateAudioForHeatLevel(HeatLevel heatLevel)
+        -void UpdateTempo(float heat)
+        -IEnumerator ChangeTempoSmoothly(float targetBPM)
+        -void ApplyTempoToAllLayers()
+        -void SetPitch(AudioSource audioSource, float pitch)
+        -void FadeInLayer(AudioSource audioSource)
+        -void FadeOutLayer(AudioSource audioSource)
+        -IEnumerator FadeAudio(AudioSource audioSource, float targetVolume, float fadeSpeed)
+        -void StartHeartbeat()
+        -void StopHeartbeat()
+        -IEnumerator HeartbeatLoop()
+        -void PlayHeatUpSound(HeatLevel heatLevel)
+        -void PlayCoolDownSound()
+        -void PlayPowerOrbExplosion()
+        -void PlayInfernoBurst()
+        -void LogDebug(string message)
+    }
+    
+    class HeatUIManager {
+        -Slider heatMeter
+        -Image heatMeterFill
+        -TextMeshProUGUI multiplierText
+        -TextMeshProUGUI heatLevelText
+        -Color coldColor
+        -Color warmColor
+        -Color hotColor
+        -Color blazingColor
+        -Color infernoColor
+        -ParticleSystem heatParticles
+        -ParticleSystem flameParticles
+        -ParticleSystem infernoParticles
+        -Image screenEdgeGlow
+        -float colorTransitionSpeed
+        -float pulseSpeed
+        -float pulseIntensity
+        -float screenGlowIntensity
+        -string coldLabel
+        -string warmLabel
+        -string hotLabel
+        -string blazingLabel
+        -string infernoLabel
+        -bool enableDebugLogs
+        -MomentumSystem momentumSystem
+        -Coroutine colorTransitionCoroutine
+        -Coroutine pulseCoroutine
+        -Coroutine screenGlowCoroutine
+        -Color currentColor
+        -bool isPulsing
+        +void OnMomentumChanged(float newMomentum)
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        -void InitializeUI()
+        -void UpdateHeatMeter(float momentum)
+        -void UpdateMultiplierText()
+        -void UpdateHeatLevelText(HeatLevel heatLevel)
+        -string GetHeatLevelLabel(HeatLevel heatLevel)
+        -void UpdateVisualEffects(HeatLevel heatLevel)
+        -Color GetHeatLevelColor(HeatLevel heatLevel)
+        -void TransitionToColor(Color targetColor)
+        -IEnumerator TransitionColorCoroutine(Color targetColor)
+        -void UpdateParticleEffects(HeatLevel heatLevel)
+        -void UpdateScreenGlow(HeatLevel heatLevel)
+        -IEnumerator UpdateScreenGlowCoroutine(float targetIntensity)
+        -void UpdatePulsingEffect(HeatLevel heatLevel)
+        -void StartPulsing()
+        -void StopPulsing()
+        -IEnumerator PulseCoroutine()
+        -void TriggerInfernoEffect()
+        -IEnumerator InfernoFlashEffect()
+        -void LogDebug(string message)
+    }
+    
+    class PowerOrb {
+        -SpriteRenderer spriteRenderer
+        -SpriteRenderer glowRenderer
+        -Animator animator
+        -Collider2D orbCollider
+        -PowerOrbData data
+        -Vector2Int boardPosition
+        -Vector2Int targetEdge
+        -int age
+        -bool isActive
+        -bool hasReachedEdge
+        -ParticleSystem glowParticles
+        -Light orbLight
+        -float moveSpeed
+        -float moveDelay
+        -bool enableDebugLogs
+        -Coroutine glowCoroutine
+        -Coroutine movementCoroutine
+        -Coroutine ageCoroutine
+        +event Action~PowerOrb~ OnOrbCollected
+        +event Action~PowerOrb~ OnOrbLost
+        +Vector2Int BoardPosition
+        +Vector2Int TargetEdge
+        +int Age
+        +bool IsActive
+        +bool HasReachedEdge
+        +PowerOrbData Data
+        +Vector2Int Position
+        +TileType Type
+        +bool IsMovable
+        +bool CanMatch
+        +void Initialize(PowerOrbData orbData, Vector2Int position)
+        +void MoveTowardEdge()
+        +void ReachTargetEdge()
+        +void LoseOrb()
+        +int GetScoreValue()
+        +bool ReachedCorrectEdge()
+        -Vector2Int GetMovementDirection()
+        -bool IsAtTargetEdge(Vector2Int position)
+        -Color GetOrbColor(OrbColor orbColor)
+        -void StartGlowEffect()
+        -IEnumerator GlowEffectCoroutine()
+        -void StartAgeTracking()
+        -IEnumerator AgeTrackingCoroutine()
+        -void StartMovement()
+        -IEnumerator MovementCoroutine()
+        -void UpdateVisualPosition()
+        -IEnumerator CollectionEffect()
+        -IEnumerator LossEffect()
+        -void LogDebug(string message)
+    }
+    
+    class PowerOrbManager {
+        -PowerOrbData[] powerOrbTypes
+        -GameObject powerOrbPrefab
+        -Transform orbParent
+        -float spawnCheckInterval
+        -Vector2Int boardSize
+        -bool enableDebugLogs
+        -MomentumSystem momentumSystem
+        -TurnScoreCalculator scoreCalculator
+        -List~PowerOrb~ activeOrbs
+        -Dictionary~Vector2Int, PowerOrb~ orbPositions
+        -float gameStartTime
+        -Coroutine spawnCheckCoroutine
+        +event Action~PowerOrb~ OnOrbSpawned
+        +event Action~PowerOrb~ OnOrbCollected
+        +event Action~PowerOrb~ OnOrbLost
+        +bool TrySpawnPowerOrb(PowerOrbData orbData)
+        +void HandleOrbCollected(PowerOrb orb)
+        +void HandleOrbLost(PowerOrb orb)
+        +List~PowerOrb~ GetActiveOrbs()
+        +PowerOrb GetOrbAtPosition(Vector2Int position)
+        +bool HasOrbAtPosition(Vector2Int position)
+        +void ClearAllOrbs()
+        +bool ForceSpawnOrb(PowerOrbData orbData)
+        +PowerOrbSpawnStats GetSpawnStats()
+        -void StartSpawnChecking()
+        -void StopSpawnChecking()
+        -IEnumerator SpawnCheckCoroutine()
+        -void CheckForSpawnOpportunities()
+        -Vector2Int GetAvailableSpawnPosition(PowerOrbData orbData)
+        -PowerOrb CreatePowerOrb(PowerOrbData orbData, Vector2Int position)
+        -void RemoveOrbFromTracking(PowerOrb orb)
+        -void LogDebug(string message)
+    }
+    
+    class PowerOrbData {
+        +OrbColor color
+        +Vector2Int targetEdge
+        +int baseScore
+        +int ageBonus
+        +float baseSpawnChance
+        +float maxSpawnChance
+        +float increaseInterval
+        +Vector2Int[] centerSpawnPositions
+        +Color glowColor
+        +float pulseSpeed
+        +float glowIntensity
+        +float moveSpeed
+        +float moveDelay
+        +int CalculateScore(int age)
+        +float GetSpawnChance(float gameTime)
+        +Vector2Int GetRandomSpawnPosition()
+        +bool ValidateConfiguration()
+        +string GetEdgeName()
+        +string GetColorName()
+    }
+    
+    class PowerOrbSpawnStats {
+        +float gameTime
+        +int activeOrbCount
+        +float totalSpawnChance
+        +Dictionary~Vector2Int, PowerOrb~ orbPositions
+    }
+    
+    class OrbColor {
+        <<enumeration>>
+        Red
+        Blue
+        Green
+        Yellow
+        Purple
+        Orange
+    }
+    
+    class TileType {
+        <<enumeration>>
+        Normal
+        PowerOrb
+        BlockingBlock
+    }
+    
+    class ITile {
+        <<interface>>
+        +Vector2Int Position
+        +TileType Type
+        +bool IsMovable
+        +bool CanMatch
+    }
+    
+    %% Relationships
+    MomentumSystem --> HeatLevel : uses
+    MomentumSystem --> PatternType : uses
+    MomentumSystem --> HeatAudioManager : notifies
+    MomentumSystem --> HeatUIManager : notifies
+    
+    TurnScoreCalculator --> MomentumSystem : uses
+    TurnScoreCalculator --> TurnScoreResult : creates
+    TurnScoreCalculator --> TurnResult : processes
+    
+    HeatAudioManager --> MomentumSystem : subscribes to
+    HeatUIManager --> MomentumSystem : subscribes to
+    
+    PowerOrb --> PowerOrbData : uses
+    PowerOrb --> OrbColor : uses
+    PowerOrb --> TileType : implements
+    PowerOrb --> ITile : implements
+    PowerOrb --> PowerOrbManager : notifies
+    
+    PowerOrbManager --> PowerOrb : manages
+    PowerOrbManager --> PowerOrbData : spawns
+    PowerOrbManager --> PowerOrbSpawnStats : creates
+    PowerOrbManager --> MomentumSystem : triggers boost
+    
+    PowerOrbData --> OrbColor : uses

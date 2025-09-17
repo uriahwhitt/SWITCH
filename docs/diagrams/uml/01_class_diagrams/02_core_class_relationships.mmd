@@ -5,10 +5,14 @@ classDiagram
         -IEventBus eventBus
         -int currentScore
         -float gameTime
+        -MomentumSystem momentumSystem
+        -TurnScoreCalculator scoreCalculator
+        -PowerOrbManager powerOrbManager
         +StartGame()
         +HandleMatch(MatchData)
         +HandlePowerUp(PowerUpType)
         +UpdateScore(int)
+        +HandleTurnComplete(TurnResult)
         -ChangeState(IGameState)
     }
 
@@ -30,6 +34,7 @@ classDiagram
         +ValidateMatch(MatchData match)
         +CalculateScore(MatchData match)
         +FindCascadeMatches(BoardState state)
+        +CreateTurnResult(MatchData[] matches)
     }
 
     class QueueSystem {
@@ -76,6 +81,133 @@ classDiagram
         +ValidatePowerUp(IPowerUp powerUp)
     }
 
+    %% Momentum-Based Scoring System
+    class MomentumSystem {
+        -float momentum
+        -float maxMomentum
+        -float turnEndDecay
+        +float CurrentMomentum
+        +HeatLevel CurrentHeatLevel
+        +float GetScoreMultiplier()
+        +void AddMatchHeat(int matchSize)
+        +void AddCascadeHeat(int cascadeLevel)
+        +void AddPatternHeat(PatternType pattern)
+        +void TriggerPowerOrbBoost()
+        +void ApplyTurnEndDecay()
+    }
+
+    class TurnScoreCalculator {
+        -int tileBaseValue
+        -int edgeMultiplier
+        -int transitionMultiplier
+        -int centerMultiplier
+        -int lShapeBonus
+        -int crossBonus
+        -int powerOrbBasePoints
+        +TurnScoreResult CalculateTurnScore(TurnResult result)
+        -int CalculateBaseScore(List~Tile~ clearedTiles)
+        -int CalculatePatternBonus(TurnResult result)
+        -float CalculateHeatGain(TurnResult result)
+    }
+
+    class HeatAudioManager {
+        -AudioSource baseLayer
+        -AudioSource rhythmLayer
+        -AudioSource melodyLayer
+        -AudioSource climaxLayer
+        -float baseBPM
+        -float currentBPM
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        +void OnHeatDecay()
+        -void UpdateAudioForHeatLevel(HeatLevel heatLevel)
+        -void UpdateTempo(float heat)
+        -void StartHeartbeat()
+    }
+
+    class HeatUIManager {
+        -Slider heatMeter
+        -Image heatMeterFill
+        -TextMeshProUGUI multiplierText
+        -TextMeshProUGUI heatLevelText
+        -ParticleSystem heatParticles
+        -ParticleSystem flameParticles
+        -ParticleSystem infernoParticles
+        -Image screenEdgeGlow
+        +void OnMomentumChanged(float newMomentum)
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        -void UpdateVisualEffects(HeatLevel heatLevel)
+        -void TransitionToColor(Color targetColor)
+        -void UpdateParticleEffects(HeatLevel heatLevel)
+    }
+
+    class PowerOrb {
+        -PowerOrbData data
+        -Vector2Int boardPosition
+        -Vector2Int targetEdge
+        -int age
+        -bool isActive
+        -bool hasReachedEdge
+        +void Initialize(PowerOrbData orbData, Vector2Int position)
+        +void MoveTowardEdge()
+        +void ReachTargetEdge()
+        +void LoseOrb()
+        +int GetScoreValue()
+        +bool ReachedCorrectEdge()
+    }
+
+    class PowerOrbManager {
+        -PowerOrbData[] powerOrbTypes
+        -List~PowerOrb~ activeOrbs
+        -Dictionary~Vector2Int, PowerOrb~ orbPositions
+        -float gameStartTime
+        +bool TrySpawnPowerOrb(PowerOrbData orbData)
+        +void HandleOrbCollected(PowerOrb orb)
+        +void HandleOrbLost(PowerOrb orb)
+        +List~PowerOrb~ GetActiveOrbs()
+        +PowerOrb GetOrbAtPosition(Vector2Int position)
+        +void ClearAllOrbs()
+    }
+
+    class PowerOrbData {
+        +OrbColor color
+        +Vector2Int targetEdge
+        +int baseScore
+        +int ageBonus
+        +float baseSpawnChance
+        +float maxSpawnChance
+        +Vector2Int[] centerSpawnPositions
+        +Color glowColor
+        +float pulseSpeed
+        +float glowIntensity
+        +int CalculateScore(int age)
+        +float GetSpawnChance(float gameTime)
+        +Vector2Int GetRandomSpawnPosition()
+    }
+
+    class TurnResult {
+        +List~Tile~ ClearedTiles
+        +List~int~ MatchSizes
+        +int CascadeLevel
+        +bool HasLShape
+        +bool HasCross
+        +bool PowerOrbCollected
+        +PowerOrb CollectedPowerOrb
+    }
+
+    class TurnScoreResult {
+        +int BaseScore
+        +int PatternBonus
+        +int PowerOrbScore
+        +int TotalBeforeMultiplier
+        +float Multiplier
+        +int FinalScore
+        +float HeatGained
+        +float FinalHeat
+        +MomentumSystem.HeatLevel HeatLevel
+    }
+
     %% Data Classes
     class BoardState {
         +TileData[,] grid
@@ -119,6 +251,9 @@ classDiagram
     GameManager -->|"3. Processes"| MatchDetector
     GameManager -->|"4. Controls"| PowerUpExecutor
     GameManager -->|"5. Handles"| InputManager
+    GameManager -->|"6. Manages"| MomentumSystem
+    GameManager -->|"7. Uses"| TurnScoreCalculator
+    GameManager -->|"8. Controls"| PowerOrbManager
 
     %% Input to Board Flow
     InputManager -->|"Swipe/Tap"| GravitySystem
@@ -145,6 +280,19 @@ classDiagram
     PowerUpExecutor -->|"Modifies"| BoardController
     PowerUpExecutor -->|"Affects"| QueueSystem
     PowerUpExecutor -->|"Uses"| GameManager
+
+    %% Scoring System Relationships
+    MatchDetector -->|"Creates"| TurnResult
+    TurnScoreCalculator -->|"Uses"| MomentumSystem
+    TurnScoreCalculator -->|"Creates"| TurnScoreResult
+    TurnScoreCalculator -->|"Processes"| TurnResult
+    MomentumSystem -->|"Notifies"| HeatAudioManager
+    MomentumSystem -->|"Notifies"| HeatUIManager
+    PowerOrbManager -->|"Manages"| PowerOrb
+    PowerOrbManager -->|"Uses"| PowerOrbData
+    PowerOrbManager -->|"Triggers"| MomentumSystem
+    PowerOrb -->|"Uses"| PowerOrbData
+    PowerOrb -->|"Notifies"| PowerOrbManager
 
     %% Data Relationships
     BoardController -->|"Manages"| TileData

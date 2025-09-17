@@ -23,12 +23,21 @@ namespace SWITCH.Core
         [SerializeField] private GameObject boardControllerPrefab;
         [SerializeField] private GameObject uiManagerPrefab;
         
+        [Header("Scoring System")]
+        [SerializeField] private MomentumSystem momentumSystem;
+        [SerializeField] private TurnScoreCalculator scoreCalculator;
+        [SerializeField] private PowerOrbManager powerOrbManager;
+        
         // Singleton instance
         private static GameManager instance;
         public static GameManager Instance => instance;
         
         // Game state
         public GameState CurrentState { get; private set; } = GameState.Menu;
+        
+        // Scoring system
+        public int CurrentScore { get; private set; } = 0;
+        public int HighScore { get; private set; } = 0;
         
         // Properties
         public bool IsGameActive => CurrentState == GameState.Playing;
@@ -62,6 +71,14 @@ namespace SWITCH.Core
         {
             // Initialize core systems
             Log("Initializing SWITCH Game Manager");
+            
+            // Initialize scoring system components
+            if (momentumSystem == null)
+                momentumSystem = GetComponent<MomentumSystem>();
+            if (scoreCalculator == null)
+                scoreCalculator = GetComponent<TurnScoreCalculator>();
+            if (powerOrbManager == null)
+                powerOrbManager = FindObjectOfType<PowerOrbManager>();
             
             // TODO: Initialize other managers
             // - BoardController
@@ -155,6 +172,45 @@ namespace SWITCH.Core
         public void ReturnToMenu()
         {
             ChangeState(GameState.Menu);
+        }
+        
+        // Scoring System Integration
+        public void HandleTurnComplete(TurnResult result)
+        {
+            if (scoreCalculator == null) return;
+            
+            var scoreResult = scoreCalculator.CalculateTurnScore(result);
+            UpdateScore(scoreResult.FinalScore);
+            
+            Log($"Turn complete: +{scoreResult.FinalScore} points (Heat: {scoreResult.FinalHeat:F1}, Multiplier: {scoreResult.Multiplier:F1}x)");
+        }
+        
+        public void UpdateScore(int points)
+        {
+            CurrentScore += points;
+            
+            if (CurrentScore > HighScore)
+            {
+                HighScore = CurrentScore;
+                Log($"New high score: {HighScore}");
+            }
+        }
+        
+        public void ResetScore()
+        {
+            CurrentScore = 0;
+            if (momentumSystem != null)
+                momentumSystem.ResetMomentum();
+        }
+        
+        public float GetCurrentHeat()
+        {
+            return momentumSystem != null ? momentumSystem.CurrentMomentum : 0f;
+        }
+        
+        public float GetScoreMultiplier()
+        {
+            return momentumSystem != null ? momentumSystem.GetScoreMultiplier() : 1f;
         }
         
         private void Log(string message)

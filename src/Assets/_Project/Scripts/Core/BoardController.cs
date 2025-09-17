@@ -24,6 +24,7 @@ namespace SWITCH.Core
         [Header("References")]
         [SerializeField] private GameObject tilePrefab;
         [SerializeField] private Transform boardParent;
+        [SerializeField] private PowerOrbManager powerOrbManager;
         
         // Board state
         private Tile[,] board;
@@ -160,6 +161,28 @@ namespace SWITCH.Core
                     {
                         board[x, y].Clear();
                     }
+                }
+            }
+        }
+        
+        public void ClearMatches(List<Vector2Int> positions)
+        {
+            foreach (var position in positions)
+            {
+                // Check for power orb at position
+                if (powerOrbManager != null)
+                {
+                    var orb = powerOrbManager.GetOrbAtPosition(position);
+                    if (orb != null)
+                    {
+                        orb.LoseOrb(); // Orb destroyed by match
+                    }
+                }
+                
+                // Clear tile at position
+                if (IsValidPosition(position) && board[position.x, position.y] != null)
+                {
+                    board[position.x, position.y].Clear();
                 }
             }
         }

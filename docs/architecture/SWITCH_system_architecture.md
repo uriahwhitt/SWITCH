@@ -13,6 +13,7 @@ graph TB
         VFX[VFXManager]
         TUT[TutorialManager]
         HUD[HUDController]
+        HUM[HeatUIManager]
     end
     
     subgraph "Game Logic Layer"
@@ -24,11 +25,15 @@ graph TB
         MD[MatchDetector]
         PE[PowerUpExecutor]
         TD[TileDistributor]
+        MS[MomentumSystem]
+        TSC[TurnScoreCalculator]
+        POM[PowerOrbManager]
     end
     
     subgraph "Service Layer"
         SM[SaveManager]
         AM[AudioManager]
+        HAM[HeatAudioManager]
         NM[NetworkManager]
         AS[AnalyticsService]
         AD[AdService]
@@ -53,24 +58,34 @@ graph TB
     VFX --> EB
     TUT --> GM
     HUD --> EB
+    HUM --> MS
+    HUM --> TSC
     
     %% Game Logic connections
     GM --> BC
     GM --> QS
     GM --> MD
     GM --> PE
+    GM --> MS
+    GM --> TSC
+    GM --> POM
     IM --> GS
     GS --> BC
     QS --> TD
     BC --> MD
     MD --> GM
+    MD --> TSC
+    TSC --> MS
+    POM --> MS
     
     %% Service connections
     GM --> SM
     GM --> AM
+    GM --> HAM
     GM --> NM
     GM --> AS
     UI --> AD
+    MS --> HAM
     
     %% Infrastructure usage
     DI -.-> GM
@@ -279,6 +294,30 @@ classDiagram
         +GetAffectedTiles()
     }
     
+    class BlockingTile {
+        -BlockingTileData data
+        -bool canBeSwapped
+        -bool canBeMatched
+        +Initialize(BlockingTileData)
+        +CanSwapWith(TileData)
+        +CanCreateMatch()
+        +MoveToEdge()
+        +Destroy()
+    }
+    
+    class PowerOrb {
+        -PowerOrbData data
+        -OrbColor targetEdge
+        -Vector2Int spawnPosition
+        -int age
+        +Initialize(PowerOrbData)
+        +MoveTowardEdge(Direction)
+        +CalculateScore()
+        +AgeOrb()
+        +ReachEdge(OrbColor target)
+        +Destroy()
+    }
+    
     class TileFactory {
         -IObjectPool tilePool
         -TileConfig config
@@ -290,6 +329,8 @@ classDiagram
     BoardController --> ITile
     ITile <|.. BasicTile
     ITile <|.. PowerTile
+    ITile <|.. BlockingTile
+    ITile <|.. PowerOrb
     BoardController --> TileFactory
     TileFactory --> ITile
 ```
@@ -371,12 +412,14 @@ classDiagram
     SwipeDetector --> GestureCalculator
 ```
 
-### 3.6 Queue System Classes
+### 3.6 Extended Queue System Classes (15-Tile System)
 ```mermaid
 classDiagram
     class IQueueSystem {
         <<interface>>
-        +int QueueSize
+        +int VisibleQueueSize
+        +int BufferSize
+        +int TotalQueueSize
         +TileData PeekNext()
         +TileData[] PeekNext(int count)
         +TileData PopNext()
@@ -384,6 +427,7 @@ classDiagram
         +void RefillQueue()
         +void ShuffleQueue()
         +QueueState GetQueueState()
+        +TileData[] GetBufferTiles()
     }
     
     class QueueManager {
@@ -392,51 +436,69 @@ classDiagram
         -QueueDisplay display
         -QueueState currentState
         -QueueConfig config
+        -const int VISIBLE_QUEUE_SIZE = 10
+        -const int BUFFER_SIZE = 5
+        -const int TOTAL_QUEUE_SIZE = 15
         +Initialize(QueueConfig config)
         +ProcessQueue()
         +RequestTiles(int count)
         +RefillFromDistributor()
         +UpdateDisplay()
         +GetQueueStatistics()
+        +GetBufferTiles()
+        +IsBufferLow()
     }
     
     class QueueDisplay {
-        -Transform[] queueSlots
+        -Transform[] visibleSlots
+        -Transform[] bufferSlots
         -TileVisual[] tileVisuals
         -QueueAnimator animator
+        -bool showExtendedView
         +UpdateDisplay(QueueState state)
         +AnimateTileDrop(int slotIndex)
         +AnimateQueueRefill()
         +HighlightNextTiles(int count)
         +SetQueueVisibility(bool visible)
+        +ShowExtendedView(bool extended)
+        +AnimateBufferRefill()
     }
     
     class TileDistributor {
         -TileConfig tileConfig
         -AntiFrustrationSystem antiFrustration
         -StatisticalAnalyzer analyzer
+        -int lookAheadDepth = 15
         +GenerateTiles(int count)
         +AnalyzeBoardState(BoardState state)
         +AdjustDistribution(BoardAnalysis analysis)
         +GetOptimalTiles(BoardState state, int count)
         +ValidateDistribution(TileData[] tiles)
+        +GenerateExtendedQueue(int totalSize)
+        +AnalyzeMatchPotential(int lookAhead)
     }
     
     class QueueState {
-        +TileData[] tiles
+        +TileData[] visibleTiles
+        +TileData[] bufferTiles
         +int currentIndex
+        +int bufferIndex
         +int totalGenerated
         +float lastRefillTime
         +QueueStatistics statistics
+        +bool isBufferLow
     }
     
     class QueueConfig {
         <<ScriptableObject>>
-        +int queueSize
+        +int visibleQueueSize = 10
+        +int bufferSize = 5
+        +int totalQueueSize = 15
         +float refillThreshold
         +bool enableAntiFrustration
         +float shuffleProbability
         +QueueAnimationConfig animations
+        +bool enableExtendedView
     }
     
     class QueueStatistics {
@@ -444,6 +506,8 @@ classDiagram
         +int matchesCreated
         +float averageMatchTime
         +Dictionary~TileType, int~ distribution
+        +int bufferUsageCount
+        +float antiFrustrationEffectiveness
     }
     
     IQueueSystem <|.. QueueManager
@@ -534,7 +598,7 @@ classDiagram
     MatchDetector --> MatchResult
 ```
 
-### 3.8 Gravity System Classes
+### 3.8 Gravity System Classes (Cache-Based Direction)
 ```mermaid
 classDiagram
     class IGravitySystem {
@@ -545,6 +609,7 @@ classDiagram
         +Vector2Int[] GetAffectedPositions(BoardState state)
         +bool IsValidDirection(Direction direction)
         +GravityResult ProcessGravity(BoardState state)
+        +Direction CalculateFromSwap(Vector2Int tile1, Vector2Int tile2)
     }
     
     class DirectionalGravity {
@@ -553,8 +618,11 @@ classDiagram
         -TileMovement movement
         -Direction currentDirection
         -GravityConfig config
+        -SwapCache cachedSwap
         +Initialize(GravityConfig config)
         +SetGravityDirection(Direction direction)
+        +CacheSwapData(Vector2Int tile1, Vector2Int tile2)
+        +ExtractGravityFromCache()
         +ApplyGravityToBoard(BoardState state)
         +CalculateTileMovement(Vector2Int position)
         +AnimateGravityMovement(TileMovement[] movements)
@@ -569,6 +637,20 @@ classDiagram
         +FindLandingPosition(Vector2Int start, BoardState state)
         +CalculateFallDistance(Vector2Int start, Vector2Int end)
         +ValidateMovement(MovementData movement)
+        +CalculateDirectionFromSwap(Vector2Int tile1, Vector2Int tile2)
+        +GetSwapDirection(Vector2Int from, Vector2Int to)
+    }
+    
+    class SwapCache {
+        +Vector2Int tile1Position
+        +Vector2Int tile2Position
+        +Direction swapDirection
+        +float timestamp
+        +bool isValid
+        +SwapCache(Vector2Int tile1, Vector2Int tile2)
+        +Direction GetGravityDirection()
+        +bool IsValid()
+        +void Clear()
     }
     
     class TileMovement {
@@ -600,6 +682,8 @@ classDiagram
         +AnimationCurve fallCurve
         +float animationDuration
         +bool enableSoundEffects
+        +float cacheTimeout
+        +bool enableSwapCaching
     }
     
     class GravityResult {
@@ -609,12 +693,14 @@ classDiagram
         +float totalDuration
         +bool isValid
         +GravityStatistics statistics
+        +Direction appliedDirection
     }
     
     IGravitySystem <|.. DirectionalGravity
     DirectionalGravity --> GravityCalculator
     DirectionalGravity --> TileMovement
     DirectionalGravity --> GravityConfig
+    DirectionalGravity --> SwapCache
     GravityCalculator --> Direction
     DirectionalGravity --> GravityResult
 ```
@@ -630,9 +716,39 @@ classDiagram
         +int id
         +bool isPowerUp
         +PowerUpType powerType
+        +Sprite defaultSprite
+        +Sprite brandedSprite
+        +Color tintColor
+        +Shape accessibilityShape
         +TileData(TileType type, Color color)
         +bool Equals(TileData other)
         +string ToString()
+    }
+    
+    class BlockingTileData {
+        <<struct>>
+        +TileType type = Blocking
+        +Sprite stoneTexture
+        +Color concreteColor
+        +bool canBeSwapped
+        +bool canBeMatched
+        +float spawnRate
+        +int maxOnBoard
+        +BlockingTileData()
+        +bool CanSpawnAt(Vector2Int position)
+    }
+    
+    class PowerOrbData {
+        <<struct>>
+        +OrbColor color
+        +Vector2Int targetEdge
+        +int baseScore
+        +int ageBonus
+        +float spawnChance
+        +Vector2Int[] centerSpawnPositions
+        +PowerOrbData(OrbColor color)
+        +int CalculateScore(int age)
+        +bool ShouldSpawn()
     }
     
     class MatchData {
@@ -865,6 +981,30 @@ classDiagram
         SafetyNet
     }
     
+    class TileType {
+        <<enumeration>>
+        Basic
+        PowerUp
+        Blocking
+        PowerOrb
+    }
+    
+    class OrbColor {
+        <<enumeration>>
+        Blue
+        Green
+        Yellow
+        Purple
+    }
+    
+    class Shape {
+        <<enumeration>>
+        Circle
+        Square
+        Triangle
+        Diamond
+    }
+    
     IPowerUp <|.. PowerUpBase
     PowerUpBase <|-- QueueShuffle
     PowerUpBase <|-- ColorBomb
@@ -877,7 +1017,240 @@ classDiagram
     PowerUpExecutor --> PowerUpResult
 ```
 
-### 3.11 Tutorial & Hint System Classes
+### 3.11 Momentum-Based Scoring System Architecture
+
+The SWITCH scoring system implements a momentum-based heat system that rewards sustained skillful play over lucky single moves. Players build "heat" through complex matches and cascades, with momentum naturally decaying to create constant pressure for excellence.
+
+#### 3.11.1 Scoring System Components
+
+```mermaid
+classDiagram
+    class MomentumSystem {
+        -float momentum
+        -float maxMomentum
+        -float turnEndDecay
+        +float CurrentMomentum
+        +HeatLevel CurrentHeatLevel
+        +float GetScoreMultiplier()
+        +void AddMatchHeat(int matchSize)
+        +void AddCascadeHeat(int cascadeLevel)
+        +void AddPatternHeat(PatternType pattern)
+        +void TriggerPowerOrbBoost()
+        +void ApplyTurnEndDecay()
+        +void ResetMomentum()
+    }
+    
+    class TurnScoreCalculator {
+        -int tileBaseValue
+        -int edgeMultiplier
+        -int transitionMultiplier
+        -int centerMultiplier
+        -int lShapeBonus
+        -int crossBonus
+        -int powerOrbBasePoints
+        +TurnScoreResult CalculateTurnScore(TurnResult result)
+        -int CalculateBaseScore(List~Tile~ clearedTiles)
+        -int CalculatePatternBonus(TurnResult result)
+        -float CalculateHeatGain(TurnResult result)
+        -int GetPositionMultiplier(Vector2Int position)
+    }
+    
+    class HeatAudioManager {
+        -AudioSource baseLayer
+        -AudioSource rhythmLayer
+        -AudioSource melodyLayer
+        -AudioSource climaxLayer
+        -float baseBPM
+        -float maxBPM
+        -float currentBPM
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        +void OnHeatDecay()
+        -void UpdateAudioForHeatLevel(HeatLevel heatLevel)
+        -void UpdateTempo(float heat)
+        -void StartHeartbeat()
+        -void StopHeartbeat()
+    }
+    
+    class HeatUIManager {
+        -Slider heatMeter
+        -Image heatMeterFill
+        -TextMeshProUGUI multiplierText
+        -TextMeshProUGUI heatLevelText
+        -ParticleSystem heatParticles
+        -ParticleSystem flameParticles
+        -ParticleSystem infernoParticles
+        -Image screenEdgeGlow
+        +void OnMomentumChanged(float newMomentum)
+        +void OnHeatLevelChanged(float newHeat)
+        +void OnMaxHeatReached()
+        -void UpdateVisualEffects(HeatLevel heatLevel)
+        -void TransitionToColor(Color targetColor)
+        -void UpdateParticleEffects(HeatLevel heatLevel)
+        -void UpdateScreenGlow(HeatLevel heatLevel)
+    }
+    
+    class PowerOrb {
+        -PowerOrbData data
+        -Vector2Int boardPosition
+        -Vector2Int targetEdge
+        -int age
+        -bool isActive
+        -bool hasReachedEdge
+        +void Initialize(PowerOrbData orbData, Vector2Int position)
+        +void MoveTowardEdge()
+        +void ReachTargetEdge()
+        +void LoseOrb()
+        +int GetScoreValue()
+        +bool ReachedCorrectEdge()
+        -Vector2Int GetMovementDirection()
+        -bool IsAtTargetEdge(Vector2Int position)
+    }
+    
+    class PowerOrbManager {
+        -PowerOrbData[] powerOrbTypes
+        -List~PowerOrb~ activeOrbs
+        -Dictionary~Vector2Int, PowerOrb~ orbPositions
+        -float gameStartTime
+        +bool TrySpawnPowerOrb(PowerOrbData orbData)
+        +void HandleOrbCollected(PowerOrb orb)
+        +void HandleOrbLost(PowerOrb orb)
+        +List~PowerOrb~ GetActiveOrbs()
+        +PowerOrb GetOrbAtPosition(Vector2Int position)
+        +void ClearAllOrbs()
+    }
+    
+    class PowerOrbData {
+        +OrbColor color
+        +Vector2Int targetEdge
+        +int baseScore
+        +int ageBonus
+        +float baseSpawnChance
+        +float maxSpawnChance
+        +Vector2Int[] centerSpawnPositions
+        +Color glowColor
+        +float pulseSpeed
+        +float glowIntensity
+        +int CalculateScore(int age)
+        +float GetSpawnChance(float gameTime)
+        +Vector2Int GetRandomSpawnPosition()
+    }
+    
+    MomentumSystem --> HeatAudioManager : OnHeatLevelChanged
+    MomentumSystem --> HeatUIManager : OnMomentumChanged
+    TurnScoreCalculator --> MomentumSystem : GetScoreMultiplier
+    PowerOrbManager --> MomentumSystem : TriggerPowerOrbBoost
+    PowerOrb --> PowerOrbData : Uses
+    PowerOrbManager --> PowerOrb : Manages
+    PowerOrbManager --> PowerOrbData : Spawns
+```
+
+#### 3.11.2 Heat Level System
+
+The momentum system uses five distinct heat levels that affect both scoring multipliers and visual/audio feedback:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Cold : Start Game
+    Cold --> Warm : 3+ Heat
+    Warm --> Hot : 5+ Heat
+    Hot --> Blazing : 8+ Heat
+    Blazing --> Inferno : 10 Heat
+    Inferno --> Blazing : Decay
+    Blazing --> Hot : Decay
+    Hot --> Warm : Decay
+    Warm --> Cold : Decay
+    Cold --> Inferno : Power Orb
+    Warm --> Inferno : Power Orb
+    Hot --> Inferno : Power Orb
+    Blazing --> Inferno : Power Orb
+```
+
+#### 3.11.3 Scoring Flow Architecture
+
+```mermaid
+sequenceDiagram
+    participant MD as MatchDetector
+    participant TSC as TurnScoreCalculator
+    participant MS as MomentumSystem
+    participant HAM as HeatAudioManager
+    participant HUM as HeatUIManager
+    participant POM as PowerOrbManager
+    
+    MD->>TSC: TurnResult (matches, cascades, patterns)
+    TSC->>TSC: Calculate base score from tiles
+    TSC->>TSC: Add pattern bonuses
+    TSC->>MS: AddMatchHeat(matchSize)
+    TSC->>MS: AddCascadeHeat(cascadeLevel)
+    TSC->>MS: AddPatternHeat(patternType)
+    
+    alt Power Orb Collected
+        TSC->>POM: Check power orb collection
+        POM->>MS: TriggerPowerOrbBoost()
+        MS->>HAM: OnMaxHeatReached()
+        MS->>HUM: OnMaxHeatReached()
+    end
+    
+    TSC->>MS: GetScoreMultiplier()
+    MS-->>TSC: multiplier (1.0x - 10.0x)
+    TSC->>TSC: Apply multiplier to total score
+    TSC->>MS: ApplyTurnEndDecay()
+    
+    MS->>HAM: OnHeatLevelChanged()
+    MS->>HUM: OnMomentumChanged()
+    
+    HAM->>HAM: Update audio layers and tempo
+    HUM->>HUM: Update heat meter and effects
+    
+    TSC-->>MD: TurnScoreResult (final score)
+```
+
+#### 3.11.4 Power Orb Integration
+
+Power Orbs provide the most dramatic scoring opportunities by instantly maximizing heat:
+
+```mermaid
+flowchart TD
+    A[Center Cell Cleared] --> B{Spawn Check}
+    B -->|Success| C[Create Power Orb]
+    B -->|Fail| D[Continue Game]
+    
+    C --> E[Orb Moves Toward Edge]
+    E --> F{Reach Edge?}
+    F -->|Correct Edge| G[Trigger Power Orb Boost]
+    F -->|Wrong Edge| H[Orb Lost - No Points]
+    
+    G --> I[Momentum = 10.0]
+    I --> J[Score = 5000 * 10x = 50,000]
+    J --> K[Visual/Audio Explosion]
+    
+    H --> L[Continue Game]
+    K --> L
+    D --> L
+```
+
+#### 3.11.5 Audio System Integration
+
+The HeatAudioManager provides dynamic audio that responds to heat levels:
+
+```mermaid
+graph TD
+    A[Heat Level Change] --> B{Heat Level}
+    
+    B -->|Cold 0-2| C[Base Layer Only]
+    B -->|Warm 3-4| D[Base + Rhythm Layer]
+    B -->|Hot 5-7| E[Base + Rhythm + Melody]
+    B -->|Blazing 8-9| F[All Layers + Heartbeat]
+    B -->|Inferno 10| G[All Layers + Heartbeat + Effects]
+    
+    C --> H[Tempo: 120 BPM]
+    D --> I[Tempo: 120-150 BPM]
+    E --> J[Tempo: 150-170 BPM]
+    F --> K[Tempo: 170-180 BPM]
+    G --> L[Tempo: 180 BPM + Explosion]
+```
+
+### 3.12 Tutorial & Hint System Classes
 ```mermaid
 classDiagram
     class ITutorialManager {
@@ -1189,10 +1562,10 @@ classDiagram
     UIPanel <|-- LeaderboardPanel
 ```
 
-### 3.4 Queue System Architecture
+### 3.4 Extended Queue System Architecture (15-Tile System)
 ```mermaid
 graph LR
-    subgraph "Queue System"
+    subgraph "Extended Queue System"
         QM[QueueManager]
         QD[QueueDisplay]
         QS[Queue State]
@@ -1200,7 +1573,7 @@ graph LR
         QM --> QS
         QM --> QD
         
-        subgraph "Queue Data"
+        subgraph "Visible Queue (10 tiles)"
             Q1[Slot 1 - Next]
             Q2[Slot 2]
             Q3[Slot 3]
@@ -1213,17 +1586,29 @@ graph LR
             Q10[Slot 10 - Newest]
         end
         
+        subgraph "Buffer Queue (5 tiles)"
+            B1[Buffer 1]
+            B2[Buffer 2]
+            B3[Buffer 3]
+            B4[Buffer 4]
+            B5[Buffer 5]
+        end
+        
         QS --> Q1
         QS --> Q10
+        QS --> B1
+        QS --> B5
     end
     
-    subgraph "Tile Distribution"
+    subgraph "Enhanced Tile Distribution"
         TD[TileDistributor]
         AF[Anti-Frustration]
         SA[Statistical Analyzer]
+        LA[Look-Ahead Analysis]
         
         TD --> AF
         TD --> SA
+        TD --> LA
     end
     
     subgraph "Queue Operations"
@@ -1231,14 +1616,19 @@ graph LR
         RF[Refill Operation]
         PK[Peek Operation]
         SH[Shuffle Operation]
+        BF[Buffer Fill]
+        BL[Buffer Low Check]
     end
     
     QM --> PO
     QM --> RF
     QM --> PK
     QM --> SH
+    QM --> BF
+    QM --> BL
     
     RF --> TD
+    BF --> TD
     TD --> QM
 ```
 

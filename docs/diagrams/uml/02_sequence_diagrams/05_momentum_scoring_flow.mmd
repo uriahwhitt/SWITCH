@@ -1,0 +1,90 @@
+sequenceDiagram
+    participant Player
+    participant BoardController
+    participant MatchDetector
+    participant TurnScoreCalculator
+    participant MomentumSystem
+    participant HeatAudioManager
+    participant HeatUIManager
+    participant PowerOrbManager
+    participant PowerOrb
+    participant GameManager
+    
+    Note over Player, GameManager: Turn Execution with Momentum Scoring
+    
+    Player->>BoardController: Make Move (Swipe/Tap)
+    BoardController->>MatchDetector: Check for Matches
+    MatchDetector->>MatchDetector: Detect Matches & Cascades
+    MatchDetector->>MatchDetector: Identify Special Patterns
+    
+    Note over MatchDetector: Create TurnResult with:<br/>- Cleared tiles<br/>- Match sizes<br/>- Cascade level<br/>- Pattern types<br/>- Power orb collection
+    
+    MatchDetector->>TurnScoreCalculator: CalculateTurnScore(TurnResult)
+    
+    Note over TurnScoreCalculator: Phase 1: Calculate Base Score
+    TurnScoreCalculator->>TurnScoreCalculator: Calculate base points from tiles
+    Note right of TurnScoreCalculator: Base = Σ(tileValue × positionMultiplier)
+    
+    Note over TurnScoreCalculator: Phase 2: Add Pattern Bonuses
+    TurnScoreCalculator->>TurnScoreCalculator: Add L-shape bonus (50 pts)
+    TurnScoreCalculator->>TurnScoreCalculator: Add cross bonus (100 pts)
+    
+    Note over TurnScoreCalculator: Phase 3: Calculate Heat Gain
+    TurnScoreCalculator->>MomentumSystem: AddMatchHeat(matchSize)
+    Note right of MomentumSystem: Match-3: 0 heat<br/>Match-4: 1.0 heat<br/>Match-5: 2.0 heat
+    
+    TurnScoreCalculator->>MomentumSystem: AddCascadeHeat(cascadeLevel)
+    Note right of MomentumSystem: 0.5 heat per cascade level
+    
+    TurnScoreCalculator->>MomentumSystem: AddPatternHeat(patternType)
+    Note right of MomentumSystem: L-shape: 1.0 heat<br/>Cross: 1.5 heat
+    
+    Note over TurnScoreCalculator: Phase 4: Check Power Orb Collection
+    alt Power Orb Collected
+        TurnScoreCalculator->>PowerOrbManager: Check orb collection
+        PowerOrbManager->>PowerOrb: ReachedCorrectEdge()
+        PowerOrb-->>PowerOrbManager: true
+        PowerOrbManager->>MomentumSystem: TriggerPowerOrbBoost()
+        Note right of MomentumSystem: INSTANT MAX HEAT (10.0)!
+        MomentumSystem->>HeatAudioManager: OnMaxHeatReached()
+        MomentumSystem->>HeatUIManager: OnMaxHeatReached()
+        HeatAudioManager->>HeatAudioManager: Play explosion sound
+        HeatUIManager->>HeatUIManager: Trigger inferno effects
+    else No Power Orb
+        Note over MomentumSystem: Apply normal heat gain
+    end
+    
+    Note over TurnScoreCalculator: Phase 5: Apply Score Multiplier
+    TurnScoreCalculator->>MomentumSystem: GetScoreMultiplier()
+    MomentumSystem-->>TurnScoreCalculator: multiplier (1.0x - 10.0x)
+    Note right of TurnScoreCalculator: Multiplier = 1 + (heat × 0.9)
+    
+    TurnScoreCalculator->>TurnScoreCalculator: Apply multiplier to total score
+    Note right of TurnScoreCalculator: Final = (Base + Patterns + Orb) × Multiplier
+    
+    Note over TurnScoreCalculator: Phase 6: Apply Turn-End Decay
+    TurnScoreCalculator->>MomentumSystem: ApplyTurnEndDecay()
+    Note right of MomentumSystem: Heat -= 1.0 (minimum 0)
+    
+    Note over MomentumSystem: Notify Systems of Changes
+    MomentumSystem->>HeatAudioManager: OnHeatLevelChanged(newHeat)
+    MomentumSystem->>HeatUIManager: OnMomentumChanged(newMomentum)
+    
+    HeatAudioManager->>HeatAudioManager: Update audio layers
+    Note right of HeatAudioManager: Cold: Base only<br/>Warm: + Rhythm<br/>Hot: + Melody<br/>Blazing: + Climax + Heartbeat<br/>Inferno: All + Effects
+    
+    HeatAudioManager->>HeatAudioManager: Update tempo
+    Note right of HeatAudioManager: BPM = 120 + (heat × 6)
+    
+    HeatUIManager->>HeatUIManager: Update heat meter
+    HeatUIManager->>HeatUIManager: Update particle effects
+    HeatUIManager->>HeatUIManager: Update screen glow
+    
+    TurnScoreCalculator-->>MatchDetector: TurnScoreResult
+    Note right of TurnScoreCalculator: Contains:<br/>- Base score<br/>- Pattern bonus<br/>- Power orb score<br/>- Multiplier<br/>- Final score<br/>- Heat gained<br/>- Final heat level
+    
+    MatchDetector->>GameManager: Report Turn Complete
+    GameManager->>GameManager: Update total score
+    GameManager->>Player: Display score feedback
+    
+    Note over Player, GameManager: Turn Complete - Ready for Next Move

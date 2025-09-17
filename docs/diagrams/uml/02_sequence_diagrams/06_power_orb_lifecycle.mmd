@@ -1,0 +1,113 @@
+sequenceDiagram
+    participant GameManager
+    participant PowerOrbManager
+    participant PowerOrbData
+    participant PowerOrb
+    participant MomentumSystem
+    participant HeatAudioManager
+    participant HeatUIManager
+    participant BoardController
+    participant MatchDetector
+    
+    Note over GameManager, MatchDetector: Power Orb Lifecycle - Spawn to Collection
+    
+    Note over GameManager: Game Start
+    GameManager->>PowerOrbManager: Initialize
+    PowerOrbManager->>PowerOrbManager: Start spawn checking coroutine
+    
+    Note over PowerOrbManager: Continuous Spawn Checking
+    loop Every spawnCheckInterval seconds
+        PowerOrbManager->>PowerOrbData: GetSpawnChance(gameTime)
+        Note right of PowerOrbData: Base: 5%<br/>Increases over time<br/>Max: 15%
+        
+        alt Spawn Chance Success
+            PowerOrbManager->>PowerOrbManager: TrySpawnPowerOrb(orbData)
+            
+            Note over PowerOrbManager: Check Spawn Conditions
+            PowerOrbManager->>PowerOrbManager: Check max orbs (4)
+            PowerOrbManager->>PowerOrbManager: GetAvailableSpawnPosition()
+            
+            alt Spawn Position Available
+                PowerOrbManager->>PowerOrb: CreatePowerOrb(orbData, position)
+                PowerOrb->>PowerOrb: Initialize(orbData, position)
+                
+                Note over PowerOrb: Orb Initialization
+                PowerOrb->>PowerOrb: Set visual properties
+                PowerOrb->>PowerOrb: Start glow effect
+                PowerOrb->>PowerOrb: Start age tracking
+                PowerOrb->>PowerOrb: Start movement toward edge
+                
+                PowerOrbManager->>PowerOrbManager: Add to active orbs
+                PowerOrbManager->>PowerOrbManager: Track position
+                PowerOrbManager->>PowerOrb: Subscribe to events
+                
+                Note over PowerOrbManager: Orb Spawned Successfully
+            else No Available Position
+                Note over PowerOrbManager: Skip spawn - board full
+            end
+        else Spawn Chance Failed
+            Note over PowerOrbManager: Continue checking
+        end
+    end
+    
+    Note over PowerOrb: Orb Movement Phase
+    loop Every moveDelay seconds
+        PowerOrb->>PowerOrb: MoveTowardEdge()
+        PowerOrb->>PowerOrb: GetMovementDirection()
+        Note right of PowerOrb: Move 1 step toward target edge
+        
+        PowerOrb->>PowerOrb: UpdateVisualPosition()
+        
+        alt Reached Target Edge
+            PowerOrb->>PowerOrb: ReachTargetEdge()
+            PowerOrb->>PowerOrb: hasReachedEdge = true
+            PowerOrb->>PowerOrb: Start collection effect
+            
+            PowerOrb->>PowerOrbManager: OnOrbCollected()
+            PowerOrbManager->>MomentumSystem: TriggerPowerOrbBoost()
+            
+            Note over MomentumSystem: INSTANT MAX HEAT!
+            MomentumSystem->>MomentumSystem: momentum = 10.0
+            MomentumSystem->>HeatAudioManager: OnMaxHeatReached()
+            MomentumSystem->>HeatUIManager: OnMaxHeatReached()
+            
+            HeatAudioManager->>HeatAudioManager: Play explosion sound
+            HeatUIManager->>HeatUIManager: Trigger inferno effects
+            
+            PowerOrbManager->>PowerOrbManager: RemoveOrbFromTracking()
+            PowerOrbManager->>PowerOrbManager: Unsubscribe from events
+            
+            Note over PowerOrb: Collection Complete
+        else Still Moving
+            Note over PowerOrb: Continue movement
+        end
+    end
+    
+    Note over PowerOrb: Alternative: Orb Loss
+    alt Orb Reaches Wrong Edge
+        PowerOrb->>PowerOrb: LoseOrb()
+        PowerOrb->>PowerOrb: Start loss effect
+        PowerOrb->>PowerOrbManager: OnOrbLost()
+        
+        PowerOrbManager->>PowerOrbManager: RemoveOrbFromTracking()
+        PowerOrbManager->>PowerOrbManager: Unsubscribe from events
+        
+        Note over PowerOrb: Orb Lost - No Points
+    end
+    
+    Note over PowerOrb: Alternative: Orb Destroyed by Match
+    alt Match Clears Orb Position
+        BoardController->>MatchDetector: Check matches
+        MatchDetector->>PowerOrbManager: GetOrbAtPosition(position)
+        PowerOrbManager-->>MatchDetector: PowerOrb (if exists)
+        
+        alt Orb Found at Position
+            MatchDetector->>PowerOrb: LoseOrb()
+            PowerOrb->>PowerOrbManager: OnOrbLost()
+            PowerOrbManager->>PowerOrbManager: RemoveOrbFromTracking()
+            
+            Note over PowerOrb: Orb Destroyed - No Points
+        end
+    end
+    
+    Note over GameManager, MatchDetector: Power Orb Lifecycle Complete

@@ -48,6 +48,15 @@
 - Memory allocation <1KB per frame
 - Draw calls <100
 - Texture memory <100MB
+
+### Scoring System Implementation
+- **MomentumSystem**: Core heat management with event-driven updates
+- **TurnScoreCalculator**: Complete turn score calculation with position multipliers
+- **HeatAudioManager**: Dynamic audio layers with tempo changes
+- **HeatUIManager**: Visual heat meter with particle effects
+- **PowerOrbManager**: Power orb spawning and collection management
+- **PowerOrb**: Individual orb behavior and movement
+- **PowerOrbData**: ScriptableObject configuration for orb types
 - Audio memory <20MB
 
 ### C# Standards
@@ -252,3 +261,128 @@ If you encounter decisions not covered in DECISIONS.md:
 3. Check if it affects gameplay (refer to PRD)
 4. Document decision in SPRINT_STATUS.md notes
 5. Commit decision documentation
+
+## Scoring System Implementation Guide
+
+### Core Components Integration
+The momentum-based scoring system integrates with existing game systems through event-driven architecture:
+
+```csharp
+// GameManager integration
+public class GameManager : MonoBehaviour
+{
+    [SerializeField] private MomentumSystem momentumSystem;
+    [SerializeField] private TurnScoreCalculator scoreCalculator;
+    [SerializeField] private PowerOrbManager powerOrbManager;
+    
+    private void HandleTurnComplete(TurnResult result)
+    {
+        var scoreResult = scoreCalculator.CalculateTurnScore(result);
+        UpdateTotalScore(scoreResult.FinalScore);
+        // Momentum and heat updates handled automatically
+    }
+}
+```
+
+### MatchDetector Integration
+Update MatchDetector to create TurnResult objects:
+
+```csharp
+public class MatchDetector : MonoBehaviour
+{
+    public TurnResult CreateTurnResult(MatchData[] matches)
+    {
+        var result = new TurnResult();
+        result.ClearedTiles = GetClearedTiles(matches);
+        result.MatchSizes = GetMatchSizes(matches);
+        result.CascadeLevel = CalculateCascadeLevel(matches);
+        result.HasLShape = DetectLShapePattern(matches);
+        result.HasCross = DetectCrossPattern(matches);
+        result.PowerOrbCollected = CheckPowerOrbCollection();
+        return result;
+    }
+}
+```
+
+### BoardController Integration
+Update BoardController to track power orbs:
+
+```csharp
+public class BoardController : MonoBehaviour
+{
+    [SerializeField] private PowerOrbManager powerOrbManager;
+    
+    private void ClearMatches(MatchData[] matches)
+    {
+        foreach (var match in matches)
+        {
+            foreach (var position in match.positions)
+            {
+                // Check for power orb at position
+                var orb = powerOrbManager.GetOrbAtPosition(position);
+                if (orb != null)
+                {
+                    orb.LoseOrb(); // Orb destroyed by match
+                }
+                
+                // Clear tile at position
+                ClearTileAt(position);
+            }
+        }
+    }
+}
+```
+
+### Audio System Integration
+HeatAudioManager automatically responds to momentum changes:
+
+```csharp
+// Automatic integration - no manual setup required
+// HeatAudioManager subscribes to MomentumSystem events
+// Audio layers fade in/out based on heat level
+// Tempo changes automatically with heat
+```
+
+### UI System Integration
+HeatUIManager provides visual feedback:
+
+```csharp
+// Automatic integration - no manual setup required
+// HeatUIManager subscribes to MomentumSystem events
+// Heat meter updates automatically
+// Particle effects trigger based on heat level
+// Screen effects activate at high heat
+```
+
+### Power Orb System Setup
+Configure power orb types in Unity Inspector:
+
+1. Create PowerOrbData ScriptableObjects for each orb color
+2. Set target edges for each color
+3. Configure spawn chances and visual properties
+4. Assign to PowerOrbManager's powerOrbTypes array
+
+### Testing Integration
+All scoring system components have comprehensive unit tests:
+
+```csharp
+// Run scoring system tests
+// Tests cover heat generation, decay, multipliers
+// Tests cover power orb lifecycle and collection
+// Tests cover score calculation with all modifiers
+// Tests cover audio and visual system integration
+```
+
+### Performance Considerations
+- MomentumSystem uses events for loose coupling
+- TurnScoreCalculator caches calculations
+- HeatAudioManager uses object pooling for audio sources
+- HeatUIManager uses coroutines for smooth transitions
+- PowerOrbManager limits active orbs to 4 maximum
+
+### Mobile Optimization
+- Audio layers use compressed formats
+- Particle effects have LOD system
+- Heat meter uses UI Canvas for performance
+- Power orb movement uses simple transforms
+- All coroutines have proper cleanup

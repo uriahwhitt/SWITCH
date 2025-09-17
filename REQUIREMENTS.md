@@ -59,6 +59,67 @@ All system architecture diagrams use Mermaid syntax and require:
 - **Test Execution**: <30 seconds for full test suite
 - **Profiling**: Real-time performance monitoring required
 
+## Core Game System Requirements
+
+### Turn Execution Flow
+- **Double-Tap Selection**: Player selects two adjacent tiles with double-tap
+- **Swap Caching**: System caches selection data (positions + direction)
+- **Match Validation**: Verify match exists BEFORE gravity calculation
+- **Gravity Extraction**: Extract gravity direction from cached swap data
+- **Performance**: <100ms input latency for double-tap recognition
+
+### Extended Queue System (15-Tile)
+- **Visible Queue**: 10 tiles shown to player
+- **Buffer Queue**: 5 hidden tiles for anti-frustration algorithm
+- **Look-Ahead Analysis**: System analyzes 15 tiles for strategic distribution
+- **Clockwise Fill Priority**: Top→Right→Bottom→Left edge filling
+- **Memory**: <1KB allocation per queue operation
+
+## Scoring System Requirements
+
+### Momentum-Based Heat System
+- **Heat Generation**: Match-4 (1.0 heat), Match-5 (2.0 heat), Cascades (0.5 per level)
+- **Heat Decay**: Automatic -1.0 heat per turn (prevents coasting)
+- **Score Multiplier**: 1.0x to 10.0x based on heat level (1 + heat × 0.9)
+- **Heat Levels**: Cold (0-2), Warm (3-4), Hot (5-7), Blazing (8-9), Inferno (10)
+
+### Special Tile Systems
+
+#### Blocking Blocks
+- **Progressive Introduction**: 0% → 2% → 10% spawn rate over time
+- **Spawn Conditions**: Only when regular tiles are placed
+- **Removal**: Must reach board edge to be removed
+- **Performance**: <0.1ms per blocking block operation
+- **Visual**: Clearly distinct stone/concrete texture
+
+#### Power Orbs
+- **Spawn Location**: Center cells (3,3), (4,3), (3,4), (4,4)
+- **Spawn Trigger**: When center cell is cleared by match
+- **Spawn Chance**: 5% base, increasing to 15% over time
+- **Instant Max Heat**: Power orbs provide instant 10.0 heat when collected
+- **Strategic Timing**: Risk/reward decisions about when to collect orbs
+- **Age-Based Scoring**: Base 5,000 points + 500 per turn survived
+- **Edge Targeting**: Orbs move toward specific colored edges
+- **Performance**: <0.5ms per power orb operation
+
+### Position-Based Scoring
+- **Edge Multiplier**: 1x (outer ring)
+- **Transition Multiplier**: 2x (middle ring)  
+- **Center Multiplier**: 3x (center 4 cells)
+- **Pattern Bonuses**: L-shape (+50), Cross (+100)
+
+### Dynamic Audio System
+- **Layered Music**: Base, Rhythm, Melody, Climax layers
+- **Tempo Changes**: 120-180 BPM based on heat level
+- **Heartbeat Effect**: Accelerates with heat level
+- **Sound Effects**: Heat up, cool down, power orb explosion
+
+### Visual Heat System
+- **Heat Meter**: Color-coded bar with multiplier display
+- **Particle Effects**: Heat, flame, and inferno particles
+- **Screen Effects**: Edge glow and pulsing effects
+- **Color Transitions**: Smooth color changes between heat levels
+
 ## Quality Standards
 
 ### Code Quality
@@ -66,12 +127,17 @@ All system architecture diagrams use Mermaid syntax and require:
 - **Documentation**: 100% public API coverage
 - **Performance**: Profiling after each feature
 - **Mobile Testing**: Daily testing on real devices
+- **Scoring System**: 100% test coverage for momentum and heat calculations
 
 ### Documentation Quality
 - **Architecture**: Complete system diagrams with Mermaid
 - **API Documentation**: XML documentation for all public methods
 - **Performance Notes**: Optimization strategies documented
 - **Educational Value**: Code examples and best practices
+- **Scoring Documentation**: Complete scoring system documentation with examples
+- **Special Tiles Documentation**: Complete blocking blocks and power orbs documentation
+- **Turn Execution Documentation**: Complete swap caching and validation documentation
+- **Queue System Documentation**: Complete 15-tile system documentation
 
 ## Workflow Requirements
 
