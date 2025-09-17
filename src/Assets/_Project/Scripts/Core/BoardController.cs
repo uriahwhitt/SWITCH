@@ -26,9 +26,17 @@ namespace SWITCH.Core
         [SerializeField] private Transform boardParent;
         [SerializeField] private PowerOrbManager powerOrbManager;
         
+        [Header("Object Pooling")]
+        [SerializeField] private int poolSize = 100;
+        [SerializeField] private bool expandPool = true;
+        
         // Board state
         private Tile[,] board;
         private Vector3 boardCenter;
+        
+        // Object pooling
+        private Queue<GameObject> tilePool = new Queue<GameObject>();
+        private List<GameObject> activeTiles = new List<GameObject>();
         
         // Properties
         public int Width => boardWidth;
@@ -48,8 +56,99 @@ namespace SWITCH.Core
             // Calculate board center
             boardCenter = transform.position;
             
+            // Initialize object pool
+            InitializeTilePool();
+            
             // Create tile grid
             CreateTileGrid();
+        }
+        
+        /// <summary>
+        /// Initializes the object pool with pre-allocated GameObjects.
+        /// Educational: This method shows how to pre-allocate objects for performance.
+        /// Performance: Reduces garbage collection by reusing objects instead of creating/destroying.
+        /// </summary>
+        private void InitializeTilePool()
+        {
+            Log("Initializing tile object pool...");
+            
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject tileObj = CreatePooledTile();
+                tilePool.Enqueue(tileObj);
+            }
+            
+            Log($"Tile pool initialized with {poolSize} objects");
+        }
+        
+        /// <summary>
+        /// Creates a pooled tile GameObject.
+        /// Educational: Shows how to create objects for pooling.
+        /// </summary>
+        private GameObject CreatePooledTile()
+        {
+            GameObject tileObj;
+            
+            if (tilePrefab != null)
+            {
+                tileObj = Instantiate(tilePrefab);
+            }
+            else
+            {
+                // Create a basic tile if no prefab is assigned
+                tileObj = new GameObject("PooledTile");
+                tileObj.AddComponent<SpriteRenderer>();
+                tileObj.AddComponent<BoxCollider2D>();
+                tileObj.AddComponent<Tile>();
+            }
+            
+            tileObj.SetActive(false);
+            tileObj.transform.SetParent(boardParent);
+            
+            return tileObj;
+        }
+        
+        /// <summary>
+        /// Gets a tile from the object pool.
+        /// Educational: Shows how to retrieve objects from a pool.
+        /// Performance: O(1) operation, no instantiation needed.
+        /// </summary>
+        private GameObject GetPooledTile()
+        {
+            if (tilePool.Count > 0)
+            {
+                return tilePool.Dequeue();
+            }
+            else if (expandPool)
+            {
+                Log("Expanding tile pool...");
+                GameObject newTile = CreatePooledTile();
+                return newTile;
+            }
+            else
+            {
+                Log("Tile pool exhausted and expansion disabled!");
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Returns a tile to the object pool.
+        /// Educational: Shows how to return objects to a pool.
+        /// Performance: O(1) operation, no destruction needed.
+        /// </summary>
+        private void ReturnTileToPool(GameObject tileObj)
+        {
+            if (tileObj == null) return;
+            
+            tileObj.SetActive(false);
+            tileObj.transform.SetParent(boardParent);
+            tilePool.Enqueue(tileObj);
+            
+            if (activeTiles.Contains(tileObj))
+            {
+                activeTiles.Remove(tileObj);
+            }
         }
         
         private void CreateTileGrid()
@@ -87,9 +186,20 @@ namespace SWITCH.Core
         
         private void CreateTileAt(int x, int y, Vector3 position)
         {
-            GameObject tileObj = Instantiate(tilePrefab, position, Quaternion.identity, boardParent);
-            Tile tile = tileObj.GetComponent<Tile>();
+            GameObject tileObj = GetPooledTile();
+            if (tileObj == null)
+            {
+                Log($"Failed to get pooled tile for position ({x}, {y})");
+                return;
+            }
             
+            // Set up the tile
+            tileObj.transform.position = position;
+            tileObj.transform.rotation = Quaternion.identity;
+            tileObj.SetActive(true);
+            activeTiles.Add(tileObj);
+            
+            Tile tile = tileObj.GetComponent<Tile>();
             if (tile == null)
             {
                 tile = tileObj.AddComponent<Tile>();
@@ -182,9 +292,38 @@ namespace SWITCH.Core
                 // Clear tile at position
                 if (IsValidPosition(position) && board[position.x, position.y] != null)
                 {
-                    board[position.x, position.y].Clear();
+                    ClearTileAt(position);
                 }
             }
+        }
+        
+        /// <summary>
+        /// Clears a tile at the specified position and returns it to the pool.
+        /// Educational: Shows how to properly manage pooled objects.
+        /// Performance: O(1) operation, no destruction needed.
+        /// </summary>
+        public void ClearTileAt(Vector2Int position)
+        {
+            if (!IsValidPosition(position)) return;
+            
+            Tile tile = board[position.x, position.y];
+            if (tile != null)
+            {
+                GameObject tileObj = tile.gameObject;
+                tile.Clear();
+                board[position.x, position.y] = null;
+                ReturnTileToPool(tileObj);
+            }
+        }
+        
+        /// <summary>
+        /// Clears a tile at the specified coordinates and returns it to the pool.
+        /// Educational: Shows how to properly manage pooled objects.
+        /// Performance: O(1) operation, no destruction needed.
+        /// </summary>
+        public void ClearTileAt(int x, int y)
+        {
+            ClearTileAt(new Vector2Int(x, y));
         }
         
         public void FillBoard()
@@ -199,6 +338,24 @@ namespace SWITCH.Core
                     }
                 }
             }
+        }
+        
+        /// <summary>
+        /// Gets pool statistics for debugging.
+        /// Educational: Shows how to monitor pool performance.
+        /// </summary>
+        public (int poolCount, int activeCount) GetPoolStats()
+        {
+            return (tilePool.Count, activeTiles.Count);
+        }
+        
+        /// <summary>
+        /// Logs a message with the BoardController prefix.
+        /// Educational: Shows how to implement consistent logging.
+        /// </summary>
+        private void Log(string message)
+        {
+            Debug.Log($"[BoardController] {message}");
         }
         
         private void OnDrawGizmos()
