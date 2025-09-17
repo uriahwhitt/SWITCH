@@ -2,12 +2,13 @@
 
 ## Project Context
 - **Game**: SWITCH - Strategic endless match-3 puzzle (Single-Player MVP)
-- **Engine**: Unity 2022.3 LTS
+- **Engine**: Unity 2022.3 LTS ✅ **CONFIGURED**
 - **Language**: C#
-- **Target**: iOS/Android mobile (60 FPS)
+- **Target**: iOS/Android mobile (60 FPS) ✅ **CONFIGURED**
 - **Architecture**: Event-driven, singleton GameManager
 - **Timeline**: 6-week MVP development
 - **Focus**: 90% single-player experience with basic social sharing
+- **Status**: Sprint 0 Complete - Ready for Sprint 1
 
 ## Before Starting Work
 1. Run `./update-planning-context.sh`
