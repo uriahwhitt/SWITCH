@@ -50,18 +50,18 @@ cp ../SWITCH_Cursor_rules.md ./Cursor_rules.md
 echo "✓ Cursor_rules.md copied" >> CONTEXT_SUMMARY.md
 
 # Copy current implementation files if they exist
-if [ -f "../src/Assets/_Project/Scripts/Core/GameManager.cs" ]; then
-    cp ../src/Assets/_Project/Scripts/Core/GameManager.cs ./
+if [ -f "../SWITCH/Assets/_Project/Scripts/Core/GameManager.cs" ]; then
+    cp ../SWITCH/Assets/_Project/Scripts/Core/GameManager.cs ./
     echo "✓ GameManager.cs copied" >> CONTEXT_SUMMARY.md
 fi
 
-if [ -f "../src/Assets/_Project/Scripts/Mechanics/DirectionalGravity.cs" ]; then
-    cp ../src/Assets/_Project/Scripts/Mechanics/DirectionalGravity.cs ./
+if [ -f "../SWITCH/Assets/_Project/Scripts/Mechanics/DirectionalGravity.cs" ]; then
+    cp ../SWITCH/Assets/_Project/Scripts/Mechanics/DirectionalGravity.cs ./
     echo "✓ DirectionalGravity.cs copied" >> CONTEXT_SUMMARY.md
 fi
 
-if [ -f "../src/Assets/_Project/Scripts/Mechanics/QueueSystem.cs" ]; then
-    cp ../src/Assets/_Project/Scripts/Mechanics/QueueSystem.cs ./
+if [ -f "../SWITCH/Assets/_Project/Scripts/Mechanics/QueueSystem.cs" ]; then
+    cp ../SWITCH/Assets/_Project/Scripts/Mechanics/QueueSystem.cs ./
     echo "✓ QueueSystem.cs copied" >> CONTEXT_SUMMARY.md
 fi
 

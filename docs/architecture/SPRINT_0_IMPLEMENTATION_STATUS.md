@@ -52,7 +52,7 @@
 
 ### Project Structure Implemented
 ```
-src/Assets/_Project/
+SWITCH/Assets/_Project/
 ├── Scripts/
 │   ├── Core/           # Core game systems (GameManager, BoardController, etc.)
 │   ├── UI/             # User interface components
@@ -113,7 +113,7 @@ src/Assets/_Project/
 ## 🔧 Development Tools
 
 ### Build Validation Script
-- **Location**: `src/build-test.sh`
+- **Location**: `SWITCH/build-test.sh`
 - **Purpose**: Validates complete Unity project setup
 - **Features**: 
   - Unity version verification
@@ -208,14 +208,14 @@ Test Framework: Ready
 
 ### For Sprint 1 Development
 1. **Pull Latest Changes**: `git pull origin main`
-2. **Validate Setup**: `./src/build-test.sh`
-3. **Open Unity Project**: Load `src/` directory in Unity
+2. **Validate Setup**: `./SWITCH/build-test.sh`
+3. **Open Unity Project**: Load `SWITCH/` directory in Unity
 4. **Check Sprint Status**: Review `planning-context/SPRINT_STATUS.md`
 5. **Begin Implementation**: Start with directional gravity system
 
 ### Development Environment
 - **Unity Version**: 2022.3.25f1 LTS
-- **Project Location**: `src/` directory
+- **Project Location**: `SWITCH/` directory
 - **Test Framework**: Ready and operational
 - **Build System**: Mobile-optimized configuration
 - **Version Control**: Git with conventional commits

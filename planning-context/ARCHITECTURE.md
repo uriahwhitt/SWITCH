@@ -11,7 +11,7 @@
 
 ### Project Structure
 ```
-src/Assets/_Project/Scripts/
+SWITCH/Assets/_Project/Scripts/
 ├── Core/           # Core game systems
 ├── Mechanics/      # Game mechanics (gravity, matching, etc.)
 ├── PowerUps/       # Power-up system

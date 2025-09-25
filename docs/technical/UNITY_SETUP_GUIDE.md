@@ -12,7 +12,7 @@
 
 ### Project Structure
 ```
-src/
+SWITCH/
 ├── Assets/
 │   └── _Project/
 │       ├── Scripts/
@@ -196,8 +196,8 @@ echo "✅ Unity Version: $UNITY_VERSION"
 
 ### Session Start
 1. **Pull Latest Changes**: `git pull origin main`
-2. **Validate Setup**: `./src/build-test.sh`
-3. **Open Unity Project**: Load `src/` directory in Unity
+2. **Validate Setup**: `./SWITCH/build-test.sh`
+3. **Open Unity Project**: Load `SWITCH/` directory in Unity
 4. **Check Sprint Status**: Review `planning-context/SPRINT_STATUS.md`
 
 ### Development Process
@@ -291,7 +291,7 @@ Unity -batchmode -quit -projectPath ./src -runTests
 
 ### Initial Setup
 - [ ] Unity 2022.3 LTS installed
-- [ ] Project created in `src/` directory
+- [ ] Project created in `SWITCH/` directory
 - [ ] Package Manager packages installed
 - [ ] Assembly definitions created
 - [ ] Build settings configured

@@ -93,9 +93,9 @@ This document provides a comprehensive overview of all critical game modificatio
 - [ ] Add unit tests for new flow
 
 **Files to Modify**:
-- `src/Assets/_Project/Scripts/Core/InputManager.cs`
-- `src/Assets/_Project/Scripts/Core/GravitySystem.cs`
-- `src/Assets/_Project/Scripts/Core/GameManager.cs`
+- `SWITCH/Assets/_Project/Scripts/Core/InputManager.cs`
+- `SWITCH/Assets/_Project/Scripts/Core/GravitySystem.cs`
+- `SWITCH/Assets/_Project/Scripts/Core/GameManager.cs`
 
 ### Phase 2: Extended Queue System (Sprint 1)
 **Priority**: HIGH
@@ -106,8 +106,8 @@ This document provides a comprehensive overview of all critical game modificatio
 - [ ] Add performance tests
 
 **Files to Modify**:
-- `src/Assets/_Project/Scripts/Core/QueueSystem.cs`
-- `src/Assets/_Project/Scripts/UI/QueueDisplay.cs`
+- `SWITCH/Assets/_Project/Scripts/Core/QueueSystem.cs`
+- `SWITCH/Assets/_Project/Scripts/UI/QueueDisplay.cs`
 
 ### Phase 3: Special Tiles (Sprint 2)
 **Priority**: HIGH
@@ -118,10 +118,10 @@ This document provides a comprehensive overview of all critical game modificatio
 - [ ] Create visual differentiation
 
 **New Files to Create**:
-- `src/Assets/_Project/Scripts/Mechanics/BlockingTile.cs`
-- `src/Assets/_Project/Scripts/Mechanics/PowerOrb.cs`
-- `src/Assets/_Project/Scripts/Mechanics/BlockingBlockSpawner.cs`
-- `src/Assets/_Project/Scripts/Mechanics/PowerOrbSpawner.cs`
+- `SWITCH/Assets/_Project/Scripts/Mechanics/BlockingTile.cs`
+- `SWITCH/Assets/_Project/Scripts/Mechanics/PowerOrb.cs`
+- `SWITCH/Assets/_Project/Scripts/Mechanics/BlockingBlockSpawner.cs`
+- `SWITCH/Assets/_Project/Scripts/Mechanics/PowerOrbSpawner.cs`
 
 ### Phase 4: Edge Fill System (Sprint 2)
 **Priority**: MEDIUM

@@ -5,8 +5,8 @@
 **Goal**: Establish project structure and prepare for development
 
 ### Tasks
-- [x] Create directory structure
-- [x] Set up planning-context files
+- [ ] Create directory structure
+- [ ] Set up planning-context files
 - [ ] Create documentation structure
 - [ ] Prepare UML diagram folders
 - [ ] Set up Unity project structure
